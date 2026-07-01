@@ -89,8 +89,7 @@ jobs:
             
             # Liên kết file cấu hình và dữ liệu upload của user vào code mới
             ln -sf $SHARED_DIR/.env .env
-            rm -rf data
-            ln -sfn $SHARED_DIR/data data
+            ln -sf $SHARED_DIR/data data
             
             # Cài đặt thư viện mới nhất
             npm install --production
