@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DocShare — Hệ thống chia sẻ tài liệu nội bộ. Upload, xem và quản lý tài liệu dễ dàng.">
+<title>DocShare — Kho tài liệu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Doc<span>Share</span></div>
+  <div style="display:flex; gap:12px; align-items:center;">
+    <button class="btn btn-ghost btn-sm" onclick="toggleLanguage()" id="langBtn">🇻🇳 VI</button>
+    <div class="header-actions" id="headerActions">
+      <!-- Nút Upload và Đăng nhập/Đăng xuất sẽ render bởi JS -->
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- UPLOAD SECTION (chỉ admin) -->
+  <div class="upload-section" id="uploadSection" style="display:none">
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.svg">
+      <div class="upload-icon">📤</div>
+      <h3>Kéo thả file vào đây</h3>
+      <p>hoặc click để chọn file — PDF, Word, Excel, PowerPoint, ảnh, text<br>Tối đa 100MB mỗi file</p>
+    </div>
+
+    <div class="upload-meta">
+      <div class="field">
+        <label>Danh mục</label>
+        <select id="categoryInput">
+          <option value="Chung">Chung</option>
+          <option value="Hướng dẫn">Hướng dẫn</option>
+          <option value="Báo cáo">Báo cáo</option>
+          <option value="Hợp đồng">Hợp đồng</option>
+          <option value="Kỹ thuật">Kỹ thuật</option>
+          <option value="Nhân sự">Nhân sự</option>
+          <option value="Tài chính">Tài chính</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Mô tả ngắn (tùy chọn)</label>
+        <input type="text" id="descInput" placeholder="Mô tả về tài liệu...">
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <div class="stat-num" id="totalDocs">0</div>
+      <div class="stat-label">Tài liệu</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalSize">0</div>
+      <div class="stat-label">Tổng dung lượng</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalDownloads">0</div>
+      <div class="stat-label">Lượt tải</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input class="search-box" id="searchInput" placeholder="Tìm tài liệu..." oninput="currentPage=1; filterDocs()">
+    </div>
+    <select class="sort-select" id="sortSelect" onchange="filterDocs()">
+      <option value="newest">Mới nhất</option>
+      <option value="oldest">Cũ nhất</option>
+      <option value="name-asc">Tên A → Z</option>
+      <option value="name-desc">Tên Z → A</option>
+      <option value="downloads">Nhiều lượt tải</option>
+      <option value="size-desc">Dung lượng lớn</option>
+      <option value="size-asc">Dung lượng nhỏ</option>
+    </select>
+    <select class="sort-select" id="typeFilter" onchange="currentPage=1; filterDocs()">
+      <option value="">Tất cả loại file</option>
+      <option value="pdf">PDF</option>
+      <option value="word">Word</option>
+      <option value="excel">Excel</option>
+      <option value="ppt">PowerPoint</option>
+      <option value="image">Ảnh</option>
+      <option value="text">Văn bản</option>
+    </select>
+  </div>
+  <div class="filters" style="margin-top: -16px;">
+    <div class="filter-chips-wrapper" id="filterChipsWrapper">
+      <button class="filter-chip active" onclick="setCategory('', this)" data-i18n="all">Tất cả</button>
+      <button class="filter-chip" onclick="setCategory('recent', this)" data-i18n="recent">Gần đây</button>
+      <button class="filter-chip" onclick="setCategory('Khác', this)" data-i18n="other">Khác</button>
+      <button class="filter-chip" id="moreCategoriesBtn" onclick="toggleMoreCategories()">...</button>
+      <!-- Dynamic categories will be injected here -->
+    </div>
+  </div>
+  
+  <div class="filters" style="margin-top: -16px;" id="collectionsWrapper" style="display:none;">
+    <div class="filter-chips-wrapper" id="collectionsChips">
+      <!-- Collection chips will be rendered here -->
+    </div>
+  </div>
+
+  <!-- DOCS GRID -->
+  <div class="docs-grid" id="docsGrid"></div>
+  
+  <!-- PAGINATION -->
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- VIEWER MODAL -->
+<div class="modal-overlay" id="viewerModal">
+  <div class="modal viewer-modal-layout">
+    <div class="viewer-main-col">
+      <div class="modal-header">
+        <div class="modal-title"><span id="viewerTitle"></span></div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCommentsSidebar()" id="toggleCommentsBtn" title="Bình luận">💬<span class="hide-on-mobile"> Ẩn bình luận</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="copyLink(currentViewerId)" title="Copy Link">🔗<span class="hide-on-mobile"> Copy Link</span></button>
+        <a id="viewerDownload" class="btn btn-ghost btn-sm" href="#" download title="Tải xuống">⬇<span class="hide-on-mobile"> Tải xuống</span></a>
+        <button class="btn btn-ghost btn-sm" onclick="closeViewer()" title="Đóng">✕<span class="hide-on-mobile"> Đóng</span></button>
+      </div>
+      <div class="modal-body" id="viewerBody" style="flex:1; overflow:auto;"></div>
+    </div>
+    
+    <!-- COMMENTS & REACTIONS SECTION -->
+    <div class="comments-sidebar" id="commentsSidebar">
+      <div class="comments-header" style="padding: 16px; border-bottom: 1px solid var(--border);">
+        <h3 style="margin:0; font-size: 16px; color: var(--text);">Bình luận & Đánh giá</h3>
+        <div class="reactions-stats" id="reactionStats" style="margin-top: 8px; font-size: 13px; color: var(--muted);">
+          👍 0 | 👎 0
+        </div>
+      </div>
+      
+      <div class="comments-list" id="commentsList" style="flex:1; overflow-y:auto; padding: 16px; display:flex; flex-direction:column; gap: 12px;">
+        <!-- Comments render here -->
+      </div>
+      
+      <div class="comments-input" style="padding: 16px; border-top: 1px solid var(--border);">
+        <div style="display:flex; gap:8px; margin-bottom: 8px;">
+          <button class="btn btn-ghost btn-sm" onclick="postReaction('like')" style="flex:1">👍 Thích</button>
+          <button class="btn btn-ghost btn-sm" onclick="postReaction('dislike')" style="flex:1">👎 Không thích</button>
+        </div>
+        <input type="text" id="commentAuthor" placeholder="Tên (tùy chọn)" class="input-box" style="margin-bottom:8px;">
+        <textarea id="commentContent" placeholder="Viết bình luận..." class="input-box" style="min-height: 60px; resize:none; margin-bottom:8px;"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="postComment()" style="width:100%">Gửi bình luận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD MODAL -->
+<div class="modal-overlay" id="adminDashboardModal">
+  <div class="modal admin-dashboard-modal">
+    <div class="modal-header">
+      <div class="modal-title"><span>Quản trị viên - Dashboard</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeAdminDashboard()">✕ Đóng</button>
+    </div>
+    <div class="modal-body" style="padding: 24px; display:flex; flex-direction:column; gap: 24px; overflow-y:auto;">
+      <div class="dashboard-stats" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
+          <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalDocs">0</div>
+          <div style="font-size:13px; color:var(--muted);">Tổng tài liệu</div>
+        </div>
+        <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
+          <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalViews">0</div>
+          <div style="font-size:13px; color:var(--muted);">Tổng lượt xem</div>
+        </div>
+        <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
+          <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalDownloads">0</div>
+          <div style="font-size:13px; color:var(--muted);">Tổng lượt tải</div>
+        </div>
+      </div>
+      
+      <div class="admin-dashboard-panels">
+        <!-- Manage Collections -->
+        <div style="flex:1;">
+          <h3>Quản lý Danh mục & Bộ sưu tập</h3>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input type="text" id="newCategoryName" placeholder="Tên danh mục mới" class="input-box" style="flex:1;">
+              <button class="btn btn-primary btn-sm" onclick="createCategory()">Thêm DM</button>
+            </div>
+            <div id="adminCategoriesList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+          
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input type="text" id="newColName" placeholder="Tên bộ sưu tập mới" class="input-box" style="flex:1;">
+            <button class="btn btn-primary btn-sm" onclick="createCollection()">Tạo BST</button>
+          </div>
+          <div id="adminColsList" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Admin collection list -->
+          </div>
+        </div>
+        
+        <!-- Admin Logs -->
+        <div style="flex:1;">
+          <h3>Nhật ký hoạt động (Logs)</h3>
+          <div id="adminLogsList" style="height: 300px; overflow-y:auto; background:var(--surface2); padding:12px; border-radius:8px; font-size:12px; display:flex; flex-direction:column; gap:8px;">
+            <!-- Logs render here -->
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top:24px; border-top:1px solid var(--border); padding-top:16px;">
+        <h3>Cấu hình Giao diện Chung (Global Settings)</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:16px; background:var(--surface2); padding:16px; border-radius:8px;">
+          <div style="flex:1; min-width:200px;">
+            <label style="display:block; margin-bottom:4px; font-weight:bold;">Chế độ hiển thị (Theme):</label>
+            <select id="settingTheme" class="input-box" style="margin-bottom:8px;">
+              <option value="dark">Đen (Mặc định)</option>
+              <option value="light">Trắng (Sáng)</option>
+              <option value="blue">Xanh dương (Blue)</option>
+              <option value="green">Xanh lá (Green)</option>
+              <option value="pink">Hồng (Pink)</option>
+              <option value="purple">Tím (Purple)</option>
+              <option value="orange">Cam (Orange)</option>
+              <option value="red">Đỏ (Red)</option>
+            </select>
+            
+            <label style="display:block; margin-bottom:4px; font-weight:bold;">Tên ứng dụng:</label>
+            <input type="text" id="settingAppName" class="input-box" style="margin-bottom:8px;">
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingHideAppName"> Ẩn tên ứng dụng</label></div>
+            
+            <label style="display:block; margin-bottom:4px; font-weight:bold;">Logo (Thay dòng chữ DocShare):</label>
+            <input type="file" id="settingLogo" accept="image/*" style="margin-bottom:8px;">
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearLogo"> Xóa logo hiện tại (trở về chữ mặc định)</label></div>
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <label style="display:block; margin-bottom:4px; font-weight:bold;">Màu nền trang (Mã HEX):</label>
+            <input type="color" id="settingBgColor" style="margin-bottom:8px; width:60px; height:30px;">
+            
+            <label style="display:block; margin-bottom:4px; font-weight:bold;">Ảnh nền trang:</label>
+            <input type="file" id="settingBgImage" accept="image/*" style="margin-bottom:8px;">
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearBgImage"> Xóa ảnh nền hiện tại</label></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveGlobalSettings()">Lưu cấu hình</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-icon">🔐</div>
+      <h2>Đăng nhập Admin</h2>
+      <p>Nhập thông tin để quản lý tài liệu</p>
+    </div>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="loginUsername" placeholder="admin" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>Mật khẩu</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn btn-primary login-submit">Đăng nhập</button>
+      <button type="button" class="btn btn-ghost login-cancel" onclick="closeLogin()">Hủy</button>
+    </form>
+  </div>
+</div>
+
+<!-- SELECTION BAR -->
+<div class="selection-bar" id="selectionBar">
+  <div class="selection-info">
+    <span>Đã chọn <strong id="selectionCount">0</strong> tài liệu</span>
+  </div>
+  <div class="selection-actions">
+    <button class="btn btn-ghost btn-sm" onclick="selectAllOnPage()">Chọn tất cả</button>
+    <button class="btn btn-primary btn-sm" onclick="bulkDownload()">⬇ Tải xuống</button>
+    <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑 Xóa</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearSelection()">✕ Bỏ chọn</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="logo">Doc<span>Share</span></div>
+        <p>Hệ thống chia sẻ tài liệu nội bộ.<br>Upload, xem và quản lý tài liệu dễ dàng.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Danh mục</h4>
+        <a href="#" onclick="setCategory('', document.querySelector('.filter-chip')); return false;">Tất cả tài liệu</a>
+        <a href="#" onclick="setCategory('recent', null); return false;">Gần đây</a>
+        <a href="#" onclick="setCategory('Hướng dẫn', null); return false;">Hướng dẫn</a>
+        <a href="#" onclick="setCategory('Báo cáo', null); return false;">Báo cáo</a>
+      </div>
+      <div class="footer-links">
+        <h4>Hỗ trợ</h4>
+        <a href="#" onclick="window.settingsManager.togglePanel(); return false;">Cài đặt giao diện</a>
+        <a href="#" onclick="openLogin(); return false;">Đăng nhập Admin</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 DocShare. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+</body>
+</html>
