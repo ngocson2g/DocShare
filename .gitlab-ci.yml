@@ -1,0 +1,49 @@
+stages:
+  - deploy
+
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  only:
+    - main
+  before_script:
+    # Cài đặt OpenSSH client và Rsync
+    - apk add --update openssh rsync
+    
+    # Khởi động ssh-agent
+    - eval $(ssh-agent -s)
+    
+    # Thêm SSH private key từ GitLab Variables (cần cấu hình biến SSH_PRIVATE_KEY trên GitLab)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    
+    # Thiết lập thư mục .ssh và nạp cấu hình host key tự động để không bị prompt "Are you sure you want to continue connecting"
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    
+  script:
+    - echo "Bắt đầu deploy lên server $SERVER_IP..."
+    
+    # Bước 1: Copy code lên server bằng Rsync
+    # Lệnh này copy toàn bộ code vào /root/docsharev2/ NHƯNG sẽ BỎ QUA các file nhạy cảm và thư mục data
+    - >
+      rsync -avz --delete 
+      --exclude='.git' 
+      --exclude='.env' 
+      --exclude='node_modules' 
+      --exclude='data/uploads' 
+      --exclude='data/documents.json' 
+      ./ root@$SERVER_IP:/root/docsharev2/
+      
+    # Bước 2: Truy cập vào server qua SSH và chạy các lệnh cập nhật
+    - >
+      ssh root@$SERVER_IP 
+      "cd /root/docsharev2 && 
+      npm install --production && 
+      pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production"
+      
+    - echo "Deploy hoàn tất rực rỡ!"
+
+  environment:
+    name: production

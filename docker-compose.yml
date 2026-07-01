@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: docshare_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - docshare_mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=docshare
+
+  redis:
+    image: redis:7-alpine
+    container_name: docshare_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - docshare_redis_data:/data
+
+  nginx:
+    image: nginx:alpine
+    container_name: docshare_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./public:/usr/share/nginx/html:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  docshare_mongo_data:
+  docshare_redis_data:
