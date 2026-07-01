@@ -19,7 +19,7 @@ deploy_production:
     # Thiết lập thư mục .ssh và nạp cấu hình host key tự động để không bị prompt "Are you sure you want to continue connecting"
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+    - ssh-keyscan -p ${SERVER_PORT:-2022} -H $SERVER_IP >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     
   script:
@@ -28,7 +28,7 @@ deploy_production:
     # Bước 1: Copy code lên server bằng Rsync
     # Lệnh này copy toàn bộ code vào /root/docsharev2/ NHƯNG sẽ BỎ QUA các file nhạy cảm và thư mục data
     - >
-      rsync -avz --delete 
+      rsync -avz --delete -e "ssh -p ${SERVER_PORT:-2022}" 
       --exclude='.git' 
       --exclude='.env' 
       --exclude='node_modules' 
@@ -38,7 +38,7 @@ deploy_production:
       
     # Bước 2: Truy cập vào server qua SSH và chạy các lệnh cập nhật
     - >
-      ssh root@$SERVER_IP 
+      ssh -p ${SERVER_PORT:-2022} root@$SERVER_IP 
       "cd /root/docsharev2 && 
       npm install --production && 
       pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production"
