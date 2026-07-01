@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Enterprise CI/CD Pipeline
 
 on:
   push:
@@ -6,7 +6,31 @@ on:
       - master
 
 jobs:
+  # BƯỚC 1: CI - KIỂM THỬ VÀ CHECK LỖI CÚ PHÁP
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Linter (ESLint)
+        run: npm run lint
+        
+      - name: Run Tests (Jest)
+        run: npm run test
+
+  # BƯỚC 2: CD - DEPLOY VÀ TỰ ĐỘNG ROLLBACK NẾU LỖI
   deploy:
+    needs: lint-and-test # Chỉ chạy nếu bước CI phía trên thành công màu xanh
     runs-on: ubuntu-latest
 
     steps:
@@ -30,22 +54,83 @@ jobs:
           ssh-keyscan -p $SERVER_PORT -H $SERVER_IP >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Deploy files using Rsync
+      - name: Deploy via Symlink Pattern (Auto Rollback)
         env:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SERVER_PORT: 2022
         run: |
+          # 1. Khởi tạo các biến thư mục
+          RELEASE_ID=$(date +%Y%m%d%H%M%S)
+          RELEASE_DIR="/root/docsharev2/releases/$RELEASE_ID"
+          SHARED_DIR="/root/docsharev2/shared"
+          APP_DIR="/root/docsharev2"
+          
+          echo "Bắt đầu deploy phiên bản: $RELEASE_ID"
+          
+          # Đảm bảo cấu trúc thư mục tồn tại trên server
+          ssh -p $SERVER_PORT root@$SERVER_IP "mkdir -p $APP_DIR/releases $SHARED_DIR/data"
+          
+          # Migration (chỉ chạy lần đầu tiên): Di chuyển file .env và data cũ vào thư mục shared
+          ssh -p $SERVER_PORT root@$SERVER_IP "if [ -f $APP_DIR/.env ]; then mv $APP_DIR/.env $SHARED_DIR/; fi"
+          ssh -p $SERVER_PORT root@$SERVER_IP "if [ -d $APP_DIR/data ] && [ ! -L $APP_DIR/data ]; then mv -n $APP_DIR/data/* $SHARED_DIR/data/ 2>/dev/null || true; rm -rf $APP_DIR/data; fi"
+
+          # 2. Upload code lên server vào thư mục Release mới
           rsync -avz --delete -e "ssh -p $SERVER_PORT" \
             --exclude='.git' \
             --exclude='.env' \
             --exclude='node_modules' \
-            --exclude='data/uploads' \
-            --exclude='data/documents.json' \
-            ./ root@$SERVER_IP:/root/docsharev2/
-
-      - name: Install dependencies and restart PM2
-        env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_PORT: 2022
-        run: |
-          ssh -p $SERVER_PORT root@$SERVER_IP "cd /root/docsharev2 && npm install --production && pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production"
+            --exclude='data' \
+            ./ root@$SERVER_IP:$RELEASE_DIR/
+            
+          # 3. Kịch bản chạy trên server (Cài đặt, Liên kết, Rollback)
+          ssh -p $SERVER_PORT root@$SERVER_IP << EOF
+            set -e # Dừng ngay nếu có lỗi rành rành
+            cd $RELEASE_DIR
+            
+            # Liên kết file cấu hình và dữ liệu upload của user vào code mới
+            ln -sf $SHARED_DIR/.env .env
+            ln -sf $SHARED_DIR/data data
+            
+            # Cài đặt thư viện mới nhất
+            npm install --production
+            
+            # Ghi nhớ lại bản code cũ trước khi tráo đổi
+            PREV_RELEASE=\$(readlink -f $APP_DIR/current || echo "")
+            
+            # TRÁO ĐỔI: Chuyển thư mục current sang trỏ vào code mới
+            ln -sfn $RELEASE_DIR $APP_DIR/current
+            
+            # Khởi động lại web
+            cd $APP_DIR/current
+            echo "Đang khởi động lại PM2..."
+            pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production
+            
+            # Đợi 3 giây để app kịp khởi động
+            sleep 3
+            
+            # KIỂM TRA LỖI (SMOKE TEST)
+            # Nếu PM2 báo lỗi (errored) hoặc ngừng chạy, kích hoạt cơ chế Rollback
+            if pm2 list | grep docshare-api | grep -q "errored\\|stopped"; then
+              echo "❌ PHÁT HIỆN LỖI APP CRASH! Đang tự động ROLLBACK..."
+              
+              if [ -n "\$PREV_RELEASE" ] && [ "\$PREV_RELEASE" != "\$RELEASE_DIR" ]; then
+                # Đổi lại thư mục trỏ về bản cũ
+                ln -sfn \$PREV_RELEASE $APP_DIR/current
+                cd $APP_DIR/current
+                
+                # Khởi động lại bản cũ để cứu sống web
+                pm2 reload ecosystem.config.js --env production
+                echo "✅ Rollback thành công về bản: \$PREV_RELEASE"
+              else
+                echo "Không tìm thấy bản code cũ để quay lại!"
+              fi
+              
+              exit 1 # Báo cho GitHub biết quá trình deploy thất bại
+            fi
+            
+            echo "✅ Deploy thành công rực rỡ!"
+            
+            # Dọn rác: Chỉ giữ lại 5 bản cập nhật gần nhất để tiết kiệm dung lượng
+            cd $APP_DIR/releases
+            ls -1tr | head -n -5 | xargs -d '\n' rm -rf -- || true
+          EOF
