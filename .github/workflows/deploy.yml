@@ -105,6 +105,11 @@ jobs:
             echo "Đang khởi động lại PM2..."
             pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production
             
+            # Tự động cập nhật Nginx để nhận file tĩnh (Frontend) và cấu hình mới nhất
+            # Lệnh này chỉ cập nhật lại riêng container Nginx mà không làm gián đoạn Database
+            echo "Đang cập nhật Nginx..."
+            docker-compose -p docshare up -d docshare_nginx
+            
             # Đợi 3 giây để app kịp khởi động
             sleep 3
             
