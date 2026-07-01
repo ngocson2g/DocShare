@@ -1,10 +1,10 @@
 const CACHE_NAME = 'docshare-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/app.js',
-  '/manifest.json'
+  '/docshare/',
+  '/docshare/index.html',
+  '/docshare/css/styles.css',
+  '/docshare/js/app.js',
+  '/docshare/manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
@@ -16,7 +16,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   // Network first cho API
-  if (e.request.url.includes('/api/')) {
+  if (e.request.url.includes('/docshare/api/')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     );

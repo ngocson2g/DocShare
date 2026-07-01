@@ -56,7 +56,7 @@ function toggleLanguage() {
 
 async function checkAuth() {
   try {
-    const res = await fetch('/api/auth/me');
+    const res = await fetch('/docshare/api/auth/me');
     const data = await res.json();
     isAdmin = data.isAdmin;
   } catch {
@@ -106,7 +106,7 @@ async function handleLogin(e) {
   errorEl.textContent = '';
 
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('/docshare/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
@@ -129,7 +129,7 @@ async function handleLogin(e) {
 
 async function handleLogout() {
   try {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/docshare/api/auth/logout', { method: 'POST' });
   } catch { /* ignore */ }
   isAdmin = false;
   renderHeaderActions();
@@ -146,9 +146,9 @@ document.getElementById('loginModal').addEventListener('click', function(e) {
 
 async function loadDocs() {
   const [docsRes, colsRes, catRes] = await Promise.all([
-    fetch('/api/documents'),
-    fetch('/api/collections'),
-    fetch('/api/categories')
+    fetch('/docshare/api/documents'),
+    fetch('/docshare/api/collections'),
+    fetch('/docshare/api/categories')
   ]);
   allDocs = await docsRes.json();
   allCollections = await colsRes.json();
@@ -458,7 +458,7 @@ function renderPdfPreviews() {
     if (!docId || canvas.dataset.rendered) return;
     canvas.dataset.rendered = 'true'; // Đánh dấu để tránh render lại
     
-    const url = `/api/view/${docId}`;
+    const url = `/docshare/api/view/${docId}`;
     pdfjsLib.getDocument(url).promise.then(pdf => {
       return pdf.getPage(1);
     }).then(page => {
@@ -504,9 +504,9 @@ function escHtml(s) {
 function viewDoc(id, name, ext) {
   currentViewerId = id;
   document.getElementById('viewerTitle').textContent = name;
-  document.getElementById('viewerDownload').href = `/api/download/${id}`;
+  document.getElementById('viewerDownload').href = `/docshare/api/download/${id}`;
   const body = document.getElementById('viewerBody');
-  const viewUrl = `/api/view/${id}`;
+  const viewUrl = `/docshare/api/view/${id}`;
   const absoluteUrl = window.location.origin + viewUrl;
   
   const imageExts = ['png','jpg','jpeg','gif','webp','svg'];
@@ -665,7 +665,7 @@ async function bulkDownload() {
   for (const id of selectedDocs) {
     // Tạo link tải ẩn và click
     const a = document.createElement('a');
-    a.href = `/api/download/${id}`;
+    a.href = `/docshare/api/download/${id}`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -683,7 +683,7 @@ async function bulkDelete() {
   let successCount = 0;
   for (const id of selectedDocs) {
     try {
-      const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/docshare/api/documents/${id}`, { method: 'DELETE' });
       if (res.ok) successCount++;
       else if (res.status === 401) {
         showToast('Bạn cần đăng nhập admin để xóa', 'error');
@@ -705,7 +705,7 @@ async function bulkDelete() {
 async function deleteDoc(id, e) {
   e.stopPropagation();
   if (!confirm('Xóa tài liệu này?')) return;
-  const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+  const res = await fetch(`/docshare/api/documents/${id}`, { method: 'DELETE' });
   if (res.ok) { showToast('Đã xóa tài liệu', 'success'); loadDocs(); }
   else if (res.status === 401) { showToast('Bạn cần đăng nhập admin để xóa', 'error'); }
   else showToast('Lỗi khi xóa', 'error');
@@ -747,7 +747,7 @@ async function uploadFiles(files) {
     fd.append('category', category);
     fd.append('description', description);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const res = await fetch('/docshare/api/upload', { method: 'POST', body: fd });
       if (res.status === 401) {
         showToast('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
         isAdmin = false;
@@ -776,7 +776,7 @@ async function togglePin(id, e) {
   
   const newPinned = !doc.pinned;
   try {
-    const res = await fetch(`/api/documents/${id}`, {
+    const res = await fetch(`/docshare/api/documents/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pinned: newPinned }),
@@ -806,8 +806,8 @@ function copyLink(id) {
 async function loadComments(docId) {
   try {
     const [commentsRes, statsRes] = await Promise.all([
-      fetch(`/api/comments/${docId}`),
-      fetch(`/api/comments/${docId}/stats`)
+      fetch(`/docshare/api/comments/${docId}`),
+      fetch(`/docshare/api/comments/${docId}/stats`)
     ]);
     const comments = await commentsRes.json();
     const stats = await statsRes.json();
@@ -839,7 +839,7 @@ async function postComment() {
   if (!content.trim()) return showToast('Vui lòng nhập nội dung', 'error');
   
   try {
-    const res = await fetch(`/api/comments/${currentViewerId}`, {
+    const res = await fetch(`/docshare/api/comments/${currentViewerId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ author, content })
@@ -855,7 +855,7 @@ async function postComment() {
 async function postReaction(type) {
   if (!currentViewerId) return;
   try {
-    const res = await fetch(`/api/comments/${currentViewerId}`, {
+    const res = await fetch(`/docshare/api/comments/${currentViewerId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reaction: type })
@@ -870,7 +870,7 @@ async function postReaction(type) {
 async function deleteComment(id, docId) {
   if (!confirm('Xóa bình luận này?')) return;
   try {
-    const res = await fetch(`/api/comments/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/docshare/api/comments/${id}`, { method: 'DELETE' });
     if (res.ok) {
       loadComments(docId);
       showToast('Đã xóa', 'success');
@@ -923,7 +923,7 @@ async function createCategory() {
   const name = document.getElementById('newCategoryName').value;
   if (!name.trim()) return;
   try {
-    const res = await fetch('/api/categories', {
+    const res = await fetch('/docshare/api/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -941,7 +941,7 @@ async function createCategory() {
 async function deleteCategory(name) {
   if (!confirm(`Xóa danh mục ${name}?`)) return;
   try {
-    const res = await fetch('/api/categories', {
+    const res = await fetch('/docshare/api/categories', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -957,7 +957,7 @@ async function deleteCategory(name) {
 
 async function loadAdminLogs() {
   try {
-    const res = await fetch('/api/auth/logs');
+    const res = await fetch('/docshare/api/auth/logs');
     if (!res.ok) return;
     const logs = await res.json();
     const list = document.getElementById('adminLogsList');
@@ -995,7 +995,7 @@ async function createCollection() {
   const name = document.getElementById('newColName').value;
   if (!name.trim()) return showToast('Vui lòng nhập tên', 'error');
   try {
-    const res = await fetch('/api/collections', {
+    const res = await fetch('/docshare/api/collections', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -1012,7 +1012,7 @@ async function createCollection() {
 async function deleteCollection(id) {
   if (!confirm('Xóa BST này? Các tài liệu sẽ không bị xóa.')) return;
   try {
-    const res = await fetch(`/api/collections/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/docshare/api/collections/${id}`, { method: 'DELETE' });
     if (res.ok) {
       await loadDocs();
       renderAdminCollections();
@@ -1025,7 +1025,7 @@ async function addSelectedToCol(colId) {
   if (selectedDocs.size === 0) return showToast('Chưa chọn tài liệu nào', 'error');
   const docIds = Array.from(selectedDocs);
   try {
-    const res = await fetch(`/api/collections/${colId}/docs`, {
+    const res = await fetch(`/docshare/api/collections/${colId}/docs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ docIds })
@@ -1065,7 +1065,7 @@ async function saveGlobalSettings() {
   if (bgFile) formData.append('bgImage', bgFile);
   
   try {
-    const res = await fetch('/api/settings', {
+    const res = await fetch('/docshare/api/settings', {
       method: 'POST',
       body: formData
     });
@@ -1098,8 +1098,8 @@ function applyGlobalSettings(settings) {
   // Update Logo
   const logoDivs = document.querySelectorAll('.logo');
   let iconHtml = '';
-  if (settings.logoUrl) {
-    iconHtml = `<img src="${settings.logoUrl}" alt="Icon" style="max-height: 32px; vertical-align: middle; margin-right: 8px; border-radius: 4px;">`;
+  if ((settings.logoUrl ? settings.logoUrl.replace('/uploads/', '/docshare/uploads/') : '')) {
+    iconHtml = `<img src="${(settings.logoUrl ? settings.logoUrl.replace('/uploads/', '/docshare/uploads/') : '')}" alt="Icon" style="max-height: 32px; vertical-align: middle; margin-right: 8px; border-radius: 4px;">`;
   }
   
   let textHtml = '';
@@ -1130,13 +1130,13 @@ function applyGlobalSettings(settings) {
   }
 
   // Update Background Image
-  if (settings.bgImageUrl) {
+  if ((settings.bgImageUrl ? settings.bgImageUrl.replace('/uploads/', '/docshare/uploads/') : '')) {
     // Use theme-appropriate overlay for readability
     const isLight = theme === 'light';
     const overlay = isLight
       ? 'rgba(245, 245, 240, 0.82)'
       : 'rgba(0, 0, 0, 0.65)';
-    document.body.style.backgroundImage = `linear-gradient(${overlay}, ${overlay}), url('${settings.bgImageUrl}')`;
+    document.body.style.backgroundImage = `linear-gradient(${overlay}, ${overlay}), url('${(settings.bgImageUrl ? settings.bgImageUrl.replace('/uploads/', '/docshare/uploads/') : '')}')`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundAttachment = 'fixed';
@@ -1150,7 +1150,7 @@ function applyGlobalSettings(settings) {
 async function init() {
   // Load settings first
   try {
-    const res = await fetch('/api/settings');
+    const res = await fetch('/docshare/api/settings');
     if (res.ok) {
       const settings = await res.json();
       applyGlobalSettings(settings);

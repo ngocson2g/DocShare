@@ -2,13 +2,13 @@
   "name": "DocShare Community",
   "short_name": "DocShare",
   "description": "Hệ thống chia sẻ tài liệu nội bộ",
-  "start_url": "/",
+  "start_url": "/docshare/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "icon.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
