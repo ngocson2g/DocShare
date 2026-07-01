@@ -1,0 +1,51 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_PORT: 2022
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # Lưu private key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          
+          # Quét host key
+          ssh-keyscan -p $SERVER_PORT -H $SERVER_IP >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy files using Rsync
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_PORT: 2022
+        run: |
+          rsync -avz --delete -e "ssh -p $SERVER_PORT" \
+            --exclude='.git' \
+            --exclude='.env' \
+            --exclude='node_modules' \
+            --exclude='data/uploads' \
+            --exclude='data/documents.json' \
+            ./ root@$SERVER_IP:/root/docsharev2/
+
+      - name: Install dependencies and restart PM2
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_PORT: 2022
+        run: |
+          ssh -p $SERVER_PORT root@$SERVER_IP "cd /root/docsharev2 && npm install --production && pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production"
