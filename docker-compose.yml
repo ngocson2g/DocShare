@@ -29,8 +29,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./public:/usr/share/nginx/html:ro
+      - ./current/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./current/public:/usr/share/nginx/html:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
