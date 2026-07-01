@@ -5,7 +5,7 @@ deploy_production:
   stage: deploy
   image: alpine:latest
   only:
-    - main
+    - master
   before_script:
     # Cài đặt OpenSSH client và Rsync
     - apk add --update openssh rsync
