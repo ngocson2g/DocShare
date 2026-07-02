@@ -13,6 +13,7 @@ const settingsRoutes = require('./routes/settings');
 const errorHandler = require('./middleware/errorHandler');
 const rateLimit = require('express-rate-limit');
 const RedisStoreRateLimit = require('rate-limit-redis').default;
+const { i18nMiddleware, messages } = require('./i18n');
 
 const app = express();
 
@@ -28,8 +29,11 @@ const apiLimiter = rateLimit({
   store: new RedisStoreRateLimit({
     sendCommand: (...args) => redisClient.sendCommand(args),
   }),
-  message: { error: 'Too many requests, please try again later.' }
+  message: (req) => ({ error: req.t ? req.t('tooManyRequests') : messages.en.tooManyRequests })
 });
+
+// i18n — attaches req.t() to every request
+app.use(i18nMiddleware);
 
 // Body parsers
 app.use(express.json({ limit: '1mb' }));

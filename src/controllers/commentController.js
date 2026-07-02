@@ -15,7 +15,7 @@ exports.add = async (req, res, next) => {
   try {
     const { author, content, reaction } = req.body;
     if (!content && !reaction) {
-      return res.status(400).json({ error: 'Nội dung không được để trống' });
+      return res.status(400).json({ error: req.t('commentContentRequired') });
     }
 
     const comment = await Comment.create({
@@ -34,7 +34,7 @@ exports.add = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
   try {
     const result = await Comment.findByIdAndDelete(req.params.id).exec();
-    if (!result) return res.status(404).json({ error: 'Không tìm thấy' });
+    if (!result) return res.status(404).json({ error: req.t('commentNotFound') });
     res.json({ success: true });
   } catch (error) {
     next(error);

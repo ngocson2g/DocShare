@@ -14,7 +14,7 @@ exports.list = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { name, description } = req.body;
-    if (!name) return res.status(400).json({ error: 'Tên bộ sưu tập không được để trống' });
+    if (!name) return res.status(400).json({ error: req.t('collectionNameRequired') });
 
     const newCol = await Collection.create({
       name: fixVietnameseName(name),
@@ -35,7 +35,7 @@ exports.update = async (req, res, next) => {
     if (description !== undefined) updateData.description = fixVietnameseName(description);
 
     const col = await Collection.findByIdAndUpdate(req.params.id, updateData, { new: true }).exec();
-    if (!col) return res.status(404).json({ error: 'Không tìm thấy' });
+    if (!col) return res.status(404).json({ error: req.t('notFound') });
 
     res.json({ success: true, collection: col });
   } catch (error) {
@@ -46,7 +46,7 @@ exports.update = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
   try {
     const col = await Collection.findByIdAndDelete(req.params.id).exec();
-    if (!col) return res.status(404).json({ error: 'Không tìm thấy' });
+    if (!col) return res.status(404).json({ error: req.t('notFound') });
 
     // Assuming we do not remove documents, just the collection.
     // The previous implementation used `collectionIds` array on docs, but my Document model didn't have it.
@@ -61,10 +61,10 @@ exports.remove = async (req, res, next) => {
 exports.addDocs = async (req, res, next) => {
   try {
     const { docIds } = req.body;
-    if (!Array.isArray(docIds)) return res.status(400).json({ error: 'docIds phải là mảng' });
+    if (!Array.isArray(docIds)) return res.status(400).json({ error: req.t('docIdsMustBeArray') });
 
     const col = await Collection.findById(req.params.id).exec();
-    if (!col) return res.status(404).json({ error: 'Không tìm thấy collection' });
+    if (!col) return res.status(404).json({ error: req.t('collectionNotFound') });
 
     const newDocs = docIds.filter(id => !col.documentIds.includes(id));
     col.documentIds.push(...newDocs);
@@ -79,10 +79,10 @@ exports.addDocs = async (req, res, next) => {
 exports.removeDocs = async (req, res, next) => {
   try {
     const { docIds } = req.body;
-    if (!Array.isArray(docIds)) return res.status(400).json({ error: 'docIds phải là mảng' });
+    if (!Array.isArray(docIds)) return res.status(400).json({ error: req.t('docIdsMustBeArray') });
 
     const col = await Collection.findById(req.params.id).exec();
-    if (!col) return res.status(404).json({ error: 'Không tìm thấy collection' });
+    if (!col) return res.status(404).json({ error: req.t('collectionNotFound') });
 
     col.documentIds = col.documentIds.filter(id => !docIds.includes(id.toString()));
     await col.save();

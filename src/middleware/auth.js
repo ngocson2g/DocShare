@@ -6,7 +6,7 @@ function requireAdmin(req, res, next) {
   if (req.session && req.session.isAdmin) {
     return next();
   }
-  return res.status(401).json({ error: 'Bạn cần đăng nhập với quyền admin' });
+  return res.status(401).json({ error: req.t('unauthorized') });
 }
 
 module.exports = { requireAdmin };

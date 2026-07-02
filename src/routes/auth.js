@@ -12,11 +12,11 @@ router.post('/login', (req, res) => {
 
   if (username === config.adminUsername && password === config.adminPassword) {
     req.session.isAdmin = true;
-    logAction('LOGIN', 'Admin đăng nhập thành công');
-    return res.json({ success: true, message: 'Đăng nhập thành công' });
+    logAction('LOGIN', req.t('adminLogin'));
+    return res.json({ success: true, message: req.t('loginSuccess') });
   }
 
-  return res.status(401).json({ error: 'Sai tên đăng nhập hoặc mật khẩu' });
+  return res.status(401).json({ error: req.t('loginFailed') });
 });
 
 /**
@@ -26,9 +26,9 @@ router.post('/login', (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      return res.status(500).json({ error: 'Lỗi khi đăng xuất' });
+      return res.status(500).json({ error: req.t('logoutError') });
     }
-    res.json({ success: true, message: 'Đã đăng xuất' });
+    res.json({ success: true, message: req.t('logoutSuccess') });
   });
 });
 
@@ -43,12 +43,12 @@ router.get('/me', (req, res) => {
 });
 
 router.get('/logs', async (req, res) => {
-  if (!req.session || !req.session.isAdmin) return res.status(401).json({ error: 'Unauthorized' });
+  if (!req.session || !req.session.isAdmin) return res.status(401).json({ error: req.t('unauthorized') });
   try {
     const logs = await getLogs();
     res.json(logs);
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi server' });
+    res.status(500).json({ error: req.t('serverError') });
   }
 });
 

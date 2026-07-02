@@ -22,7 +22,7 @@ exports.list = async (req, res, next) => {
 exports.add = async (req, res, next) => {
   try {
     const { name } = req.body;
-    if (!name) return res.status(400).json({ error: 'Tên danh mục không được để trống' });
+    if (!name) return res.status(400).json({ error: req.t('categoryNameRequired') });
     
     let category = await Category.findOne({ name }).exec();
     if (!category) {

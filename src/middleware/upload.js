@@ -26,7 +26,7 @@ const fileFilter = (req, file, cb) => {
   if (config.allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Định dạng file không được hỗ trợ'));
+    cb(new Error('INVALID_FILE_TYPE'));
   }
 };
 

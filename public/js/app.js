@@ -16,40 +16,289 @@ const selectedDocs = new Set();
 // ========== i18n ==========
 const i18n = {
   vi: {
+    // Header & Nav
     all: 'Tất cả', recent: 'Gần đây', other: 'Khác',
     uploadBtn: '＋ Upload', dashboardBtn: '📊 Dashboard',
     logoutBtn: 'Đăng xuất', loginBtn: '🔐 Đăng nhập',
     searchPlaceholder: 'Tìm tài liệu...', emptyState: 'Chưa có tài liệu',
-    emptyDesc: 'Upload tài liệu đầu tiên của bạn'
+    emptyDesc: 'Upload tài liệu đầu tiên của bạn',
+
+    // Stats
+    statDocs: 'Tài liệu', statSize: 'Tổng dung lượng', statDownloads: 'Lượt tải',
+
+    // Sort & Filter
+    newest: 'Mới nhất', oldest: 'Cũ nhất',
+    nameAsc: 'Tên A → Z', nameDesc: 'Tên Z → A',
+    mostDownloads: 'Nhiều lượt tải', sizeLarge: 'Dung lượng lớn', sizeSmall: 'Dung lượng nhỏ',
+    allTypes: 'Tất cả loại file', image: 'Ảnh', text: 'Văn bản',
+    allCollections: 'Tất cả BST', showLess: 'Ẩn bớt',
+
+    // Upload Section
+    dropTitle: 'Kéo thả file vào đây',
+    dropDesc: 'hoặc click để chọn file — PDF, Word, Excel, PowerPoint, ảnh, text',
+    dropLimit: 'Tối đa 100MB mỗi file',
+    labelCategory: 'Danh mục', labelDescription: 'Mô tả ngắn (tùy chọn)',
+    descPlaceholder: 'Mô tả về tài liệu...',
+
+    // Document Card
+    viewBtn: 'Xem', pinTooltip: 'Ghim lên đầu', unpinTooltip: 'Bỏ ghim',
+    pinnedBadge: 'Được ghim', newBadge: 'Mới',
+
+    // Viewer
+    hideComments: 'Ẩn bình luận', showComments: 'Hiện bình luận',
+    copyLink: 'Copy Link', downloadBtn: 'Tải xuống', closeBtn: 'Đóng',
+    noPreview: (ext) => `Định dạng <strong>.${ext}</strong> không thể xem trực tiếp`,
+    downloadToOpen: '⬇ Tải xuống để mở',
+    loadingPdf: 'Đang tải nội dung PDF...',
+    pdfTooLong: 'Tài liệu quá dài, chỉ hiển thị 20 trang đầu. Vui lòng tải xuống để xem toàn bộ.',
+    pdfError: 'Lỗi không thể tải PDF trực tiếp. Vui lòng tải xuống để xem.',
+
+    // Comments & Reactions
+    commentsTitle: 'Bình luận & Đánh giá',
+    noComments: 'Chưa có bình luận nào',
+    likeBtn: 'Thích', dislikeBtn: 'Không thích',
+    authorPlaceholder: 'Tên (tùy chọn)',
+    commentPlaceholder: 'Viết bình luận...',
+    submitComment: 'Gửi bình luận',
+    deleteCommentBtn: 'Xóa',
+
+    // Login Modal
+    loginTitle: 'Đăng nhập Admin',
+    loginSubtitle: 'Nhập thông tin để quản lý tài liệu',
+    labelUsername: 'Tên đăng nhập', labelPassword: 'Mật khẩu',
+    loginSubmit: 'Đăng nhập', loginCancel: 'Hủy',
+
+    // Selection Bar
+    selected: 'Đã chọn', documents: 'tài liệu',
+    selectAll: 'Chọn tất cả', deselect: '✕ Bỏ chọn',
+    bulkDownload: '⬇ Tải xuống', bulkDelete: '🗑 Xóa',
+
+    // Admin Dashboard
+    dashTitle: 'Quản trị viên - Dashboard', dashClose: '✕ Đóng',
+    dashTotalDocs: 'Tổng tài liệu', dashTotalViews: 'Tổng lượt xem', dashTotalDownloads: 'Tổng lượt tải',
+    manageTitle: 'Quản lý Danh mục & Bộ sưu tập',
+    newCategoryPlaceholder: 'Tên danh mục mới', addCategory: 'Thêm DM',
+    newCollectionPlaceholder: 'Tên bộ sưu tập mới', createCollection: 'Tạo BST',
+    addSelectedDocs: '+ Thêm tài liệu đang chọn',
+    deleteBtn: 'Xóa',
+    docsCount: 'tài liệu',
+    logsTitle: 'Nhật ký hoạt động (Logs)', noLogs: 'Chưa có log',
+
+    // Settings
+    settingsTitle: 'Cấu hình Giao diện Chung (Global Settings)',
+    themeLabel: 'Chế độ hiển thị (Theme):',
+    themeDark: 'Đen (Mặc định)', themeLight: 'Trắng (Sáng)',
+    themeBlue: 'Xanh dương (Blue)', themeGreen: 'Xanh lá (Green)',
+    themePink: 'Hồng (Pink)', themePurple: 'Tím (Purple)',
+    themeOrange: 'Cam (Orange)', themeRed: 'Đỏ (Red)',
+    appNameLabel: 'Tên ứng dụng:', hideAppNameLabel: 'Ẩn tên ứng dụng',
+    logoLabel: 'Logo (Thay dòng chữ DocShare):',
+    clearLogoLabel: 'Xóa logo hiện tại (trở về chữ mặc định)',
+    bgColorLabel: 'Màu nền trang (Mã HEX):',
+    bgImageLabel: 'Ảnh nền trang:',
+    clearBgLabel: 'Xóa ảnh nền hiện tại',
+    saveSettings: 'Lưu cấu hình',
+
+    // Footer
+    footerDesc: 'Hệ thống chia sẻ tài liệu nội bộ.<br>Upload, xem và quản lý tài liệu dễ dàng.',
+    footerCategory: 'Danh mục', footerAllDocs: 'Tất cả tài liệu',
+    footerRecent: 'Gần đây', footerGuide: 'Hướng dẫn', footerReport: 'Báo cáo',
+    footerSupport: 'Hỗ trợ', footerSettings: 'Cài đặt giao diện', footerLogin: 'Đăng nhập Admin',
+
+    // Toasts
+    loginSuccess: 'Đăng nhập thành công!',
+    loginFailed: 'Đăng nhập thất bại',
+    loginError: 'Lỗi kết nối máy chủ',
+    loggedOut: 'Đã đăng xuất',
+    docDeleted: 'Đã xóa tài liệu',
+    needAdmin: 'Bạn cần đăng nhập admin để xóa',
+    deleteError: 'Lỗi khi xóa',
+    sessionExpired: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+    uploadError: 'Lỗi upload',
+    connectionError: 'Lỗi kết nối',
+    downloading: (n) => `Đang tải ${n} tài liệu...`,
+    confirmBulkDelete: (n) => `Xóa ${n} tài liệu đã chọn?`,
+    bulkDeleted: (n) => `Đã xóa ${n} tài liệu`,
+    confirmDelete: 'Xóa tài liệu này?',
+    pinned: '📌 Đã ghim tài liệu', unpinned: 'Đã bỏ ghim',
+    needAdminPin: 'Bạn cần đăng nhập admin',
+    linkCopied: 'Đã copy link chia sẻ',
+    commentEmpty: 'Vui lòng nhập nội dung',
+    commentSent: 'Đã gửi bình luận',
+    reacted: (type) => `Đã ${type === 'like' ? 'thích' : 'không thích'}`,
+    confirmDeleteComment: 'Xóa bình luận này?',
+    deleted: 'Đã xóa',
+    categoryAdded: 'Đã thêm danh mục', categoryDeleted: 'Đã xóa danh mục',
+    confirmDeleteCategory: (name) => `Xóa danh mục ${name}?`,
+    inputName: 'Vui lòng nhập tên',
+    collectionCreated: 'Đã tạo BST',
+    confirmDeleteCollection: 'Xóa BST này? Các tài liệu sẽ không bị xóa.',
+    collectionDeleted: 'Đã xóa',
+    noDocsSelected: 'Chưa chọn tài liệu nào',
+    addedToCollection: 'Đã thêm vào BST',
+    settingsSaved: 'Đã lưu cấu hình giao diện',
+    settingsFailed: 'Lưu cấu hình thất bại',
+    anonymous: 'Ẩn danh',
   },
+
   en: {
+    // Header & Nav
     all: 'All', recent: 'Recent', other: 'Other',
     uploadBtn: '＋ Upload', dashboardBtn: '📊 Dashboard',
-    logoutBtn: 'Logout', loginBtn: '🔐 Login',
-    searchPlaceholder: 'Search documents...', emptyState: 'No documents',
-    emptyDesc: 'Upload your first document'
+    logoutBtn: 'Logout', loginBtn: '🔐 Sign in',
+    searchPlaceholder: 'Search documents...', emptyState: 'No documents yet',
+    emptyDesc: 'Upload your first document to get started',
+
+    // Stats
+    statDocs: 'Documents', statSize: 'Total Size', statDownloads: 'Downloads',
+
+    // Sort & Filter
+    newest: 'Newest First', oldest: 'Oldest First',
+    nameAsc: 'Name A → Z', nameDesc: 'Name Z → A',
+    mostDownloads: 'Most Downloads', sizeLarge: 'Largest First', sizeSmall: 'Smallest First',
+    allTypes: 'All File Types', image: 'Images', text: 'Text Files',
+    allCollections: 'All Collections', showLess: 'Show less',
+
+    // Upload Section
+    dropTitle: 'Drop files here',
+    dropDesc: 'or click to browse — PDF, Word, Excel, PowerPoint, images, text',
+    dropLimit: 'Up to 100 MB per file',
+    labelCategory: 'Category', labelDescription: 'Description (optional)',
+    descPlaceholder: 'Brief description...',
+
+    // Document Card
+    viewBtn: 'View', pinTooltip: 'Pin to top', unpinTooltip: 'Unpin',
+    pinnedBadge: 'Pinned', newBadge: 'New',
+
+    // Viewer
+    hideComments: 'Hide comments', showComments: 'Show comments',
+    copyLink: 'Copy Link', downloadBtn: 'Download', closeBtn: 'Close',
+    noPreview: (ext) => `<strong>.${ext}</strong> files cannot be previewed`,
+    downloadToOpen: '⬇ Download to open',
+    loadingPdf: 'Loading PDF...',
+    pdfTooLong: 'Document too long — showing first 20 pages. Download for the full version.',
+    pdfError: 'Unable to load PDF inline. Please download to view.',
+
+    // Comments & Reactions
+    commentsTitle: 'Comments & Reviews',
+    noComments: 'No comments yet',
+    likeBtn: 'Like', dislikeBtn: 'Dislike',
+    authorPlaceholder: 'Name (optional)',
+    commentPlaceholder: 'Write a comment...',
+    submitComment: 'Post Comment',
+    deleteCommentBtn: 'Delete',
+
+    // Login Modal
+    loginTitle: 'Admin Sign In',
+    loginSubtitle: 'Enter your credentials to manage documents',
+    labelUsername: 'Username', labelPassword: 'Password',
+    loginSubmit: 'Sign In', loginCancel: 'Cancel',
+
+    // Selection Bar
+    selected: 'Selected', documents: 'documents',
+    selectAll: 'Select All', deselect: '✕ Deselect',
+    bulkDownload: '⬇ Download', bulkDelete: '🗑 Delete',
+
+    // Admin Dashboard
+    dashTitle: 'Admin Dashboard', dashClose: '✕ Close',
+    dashTotalDocs: 'Total Documents', dashTotalViews: 'Total Views', dashTotalDownloads: 'Total Downloads',
+    manageTitle: 'Categories & Collections',
+    newCategoryPlaceholder: 'New category name', addCategory: 'Add',
+    newCollectionPlaceholder: 'New collection name', createCollection: 'Create',
+    addSelectedDocs: '+ Add selected docs',
+    deleteBtn: 'Delete',
+    docsCount: 'docs',
+    logsTitle: 'Activity Log', noLogs: 'No activity yet',
+
+    // Settings
+    settingsTitle: 'Appearance Settings',
+    themeLabel: 'Theme:',
+    themeDark: 'Dark (Default)', themeLight: 'Light',
+    themeBlue: 'Blue', themeGreen: 'Green',
+    themePink: 'Pink', themePurple: 'Purple',
+    themeOrange: 'Orange', themeRed: 'Red',
+    appNameLabel: 'App Name:', hideAppNameLabel: 'Hide app name',
+    logoLabel: 'Logo:',
+    clearLogoLabel: 'Remove current logo',
+    bgColorLabel: 'Background Color:',
+    bgImageLabel: 'Background Image:',
+    clearBgLabel: 'Remove background image',
+    saveSettings: 'Save Settings',
+
+    // Footer
+    footerDesc: 'Internal document sharing platform.<br>Upload, view, and manage documents with ease.',
+    footerCategory: 'Categories', footerAllDocs: 'All Documents',
+    footerRecent: 'Recent', footerGuide: 'Guides', footerReport: 'Reports',
+    footerSupport: 'Support', footerSettings: 'Appearance', footerLogin: 'Admin Sign In',
+
+    // Toasts
+    loginSuccess: 'Signed in successfully!',
+    loginFailed: 'Sign-in failed',
+    loginError: 'Unable to connect to server',
+    loggedOut: 'Signed out',
+    docDeleted: 'Document deleted',
+    needAdmin: 'Admin access required',
+    deleteError: 'Failed to delete',
+    sessionExpired: 'Session expired — please sign in again.',
+    uploadError: 'Upload failed',
+    connectionError: 'Connection error',
+    downloading: (n) => `Downloading ${n} document${n > 1 ? 's' : ''}...`,
+    confirmBulkDelete: (n) => `Delete ${n} selected document${n > 1 ? 's' : ''}?`,
+    bulkDeleted: (n) => `${n} document${n > 1 ? 's' : ''} deleted`,
+    confirmDelete: 'Delete this document?',
+    pinned: '📌 Pinned to top', unpinned: 'Unpinned',
+    needAdminPin: 'Admin access required',
+    linkCopied: 'Link copied to clipboard',
+    commentEmpty: 'Please enter a comment',
+    commentSent: 'Comment posted',
+    reacted: (type) => type === 'like' ? 'Liked!' : 'Disliked',
+    confirmDeleteComment: 'Delete this comment?',
+    deleted: 'Deleted',
+    categoryAdded: 'Category added', categoryDeleted: 'Category deleted',
+    confirmDeleteCategory: (name) => `Delete category "${name}"?`,
+    inputName: 'Please enter a name',
+    collectionCreated: 'Collection created',
+    confirmDeleteCollection: 'Delete this collection? Documents will not be removed.',
+    collectionDeleted: 'Deleted',
+    noDocsSelected: 'No documents selected',
+    addedToCollection: 'Added to collection',
+    settingsSaved: 'Settings saved',
+    settingsFailed: 'Failed to save settings',
+    anonymous: 'Anonymous',
   }
 };
 
-function t(key) {
-  return i18n[currentLang][key] || key;
+function t(key, ...args) {
+  const val = i18n[currentLang][key] || key;
+  if (typeof val === 'function') return val(...args);
+  return val;
 }
 
 function toggleLanguage() {
   currentLang = currentLang === 'vi' ? 'en' : 'vi';
   document.getElementById('langBtn').textContent = currentLang === 'vi' ? '🇻🇳 VI' : '🇬🇧 EN';
+  document.documentElement.lang = currentLang;
   
-  // Update static UI text
+  // Update all data-i18n elements
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    el.textContent = t(key);
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.placeholder = t(key);
+    } else {
+      el.textContent = t(key);
+    }
+  });
+  // Update data-i18n-html (for elements using innerHTML)
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
   });
   
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.placeholder = t('searchPlaceholder');
   
   renderHeaderActions();
-  filterDocs(); // Re-render docs logic with new language if needed
+  renderCollections();
+  filterDocs();
 }
 
 // ========== AUTH ==========
@@ -117,13 +366,13 @@ async function handleLogin(e) {
       isAdmin = true;
       closeLogin();
       renderHeaderActions();
-      filterDocs(); // Re-render cards với nút xóa
-      showToast('Đăng nhập thành công!', 'success');
+      filterDocs();
+      showToast(t('loginSuccess'), 'success');
     } else {
-      errorEl.textContent = data.error || 'Đăng nhập thất bại';
+      errorEl.textContent = data.error || t('loginFailed');
     }
   } catch {
-    errorEl.textContent = 'Lỗi kết nối máy chủ';
+    errorEl.textContent = t('loginError');
   }
 }
 
@@ -134,7 +383,7 @@ async function handleLogout() {
   isAdmin = false;
   renderHeaderActions();
   filterDocs(); // Re-render cards bỏ nút xóa
-  showToast('Đã đăng xuất', 'success');
+  showToast(t('loggedOut'), 'success');
 }
 
 // Click outside login modal to close
@@ -191,7 +440,7 @@ function renderCollections() {
     return;
   }
   wrapper.style.display = 'block';
-  let html = `<button class="filter-chip ${currentCollection === '' ? 'active' : ''}" onclick="setCollection('')">Tất cả BST</button>`;
+  let html = `<button class="filter-chip ${currentCollection === '' ? 'active' : ''}" onclick="setCollection('')">${t('allCollections')}</button>`;
   allCollections.forEach(c => {
     html += `<button class="filter-chip ${currentCollection === c.id ? 'active' : ''}" onclick="setCollection('${c.id}')">${escHtml(c.name)}</button>`;
   });
@@ -309,7 +558,7 @@ function toggleMoreCategories() {
   const wrapper = document.getElementById('filterChipsWrapper');
   wrapper.classList.toggle('expanded');
   const btn = document.getElementById('moreCategoriesBtn');
-  btn.textContent = wrapper.classList.contains('expanded') ? 'Ẩn bớt' : '...';
+  btn.textContent = wrapper.classList.contains('expanded') ? t('showLess') : '...';
 }
 
 function goToPage(page) {
@@ -381,7 +630,7 @@ function renderDocs(docs) {
 function docCard(d) {
   const ext = d.originalName.split('.').pop().toLowerCase();
   const [iconClass, emoji] = getIcon(ext);
-  const date = new Date(d.uploadedAt).toLocaleDateString('vi-VN');
+  const date = new Date(d.uploadedAt).toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US');
 
   // Nút xóa chỉ hiện khi đã đăng nhập admin
   const deleteBtn = isAdmin
@@ -390,16 +639,16 @@ function docCard(d) {
     
   // Nút ghim chỉ hiện cho admin
   const pinBtn = isAdmin
-    ? `<button class="pin-btn ${d.pinned ? 'pinned' : ''}" onclick="togglePin('${d.id}', event)" title="${d.pinned ? 'Bỏ ghim' : 'Ghim lên đầu'}">${d.pinned ? '📌' : '📌'}</button>`
+    ? `<button class="pin-btn ${d.pinned ? 'pinned' : ''}" onclick="togglePin('${d.id}', event)" title="${d.pinned ? t('unpinTooltip') : t('pinTooltip')}">${d.pinned ? '📌' : '📌'}</button>`
     : '';
   
   // Badge ghim cho người dùng thường
-  const pinBadge = (!isAdmin && d.pinned) ? '<span class="pin-badge" title="Được ghim">📌</span>' : '';
+  const pinBadge = (!isAdmin && d.pinned) ? `<span class="pin-badge" title="${t('pinnedBadge')}">📌</span>` : '';
   
   // Badge "Mới" nếu upload trong 3 ngày gần đây
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const isNew = new Date(d.uploadedAt) > threeDaysAgo;
-  const newBadge = isNew ? '<span class="new-badge">Mới</span>' : '';
+  const newBadge = isNew ? `<span class="new-badge">${t('newBadge')}</span>` : '';
 
   // Xây dựng phần preview
   let previewHtml = '';
@@ -436,7 +685,7 @@ function docCard(d) {
         <span class="category-badge">${escHtml(d.category)}</span>
         <div class="doc-actions">
           ${pinBtn}
-          <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}','${escHtml(d.originalName)}','${ext}')">👁 Xem</button>
+          <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}','${escHtml(d.originalName)}','${ext}')">👁 ${t('viewBtn')}</button>
           <a class="btn btn-ghost btn-sm" href="/api/download/${d.id}">⬇</a>
           ${deleteBtn}
         </div>
@@ -516,7 +765,7 @@ function viewDoc(id, name, ext) {
   if (pdfExt.includes(ext)) {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      body.innerHTML = `<div id="mobilePdfViewer" style="height:100%; overflow-y:auto; background:var(--surface2); padding:10px; text-align:center;"><div style="padding:20px;">Đang tải nội dung PDF...</div></div>`;
+      body.innerHTML = `<div id="mobilePdfViewer" style="height:100%; overflow-y:auto; background:var(--surface2); padding:10px; text-align:center;"><div style="padding:20px;">${t('loadingPdf')}</div></div>`;
       renderFullPdf(viewUrl, 'mobilePdfViewer');
     } else {
       body.innerHTML = `<iframe src="${viewUrl}#toolbar=1" title="${escHtml(name)}" width="100%" height="100%" style="border:none;"></iframe>`;
@@ -531,8 +780,8 @@ function viewDoc(id, name, ext) {
   } else {
     body.innerHTML = `<div class="no-preview">
       <div class="icon">📄</div>
-      <p>Định dạng <strong>.${ext}</strong> không thể xem trực tiếp</p>
-      <a class="btn btn-primary" href="/api/download/${id}">⬇ Tải xuống để mở</a>
+      <p>${t('noPreview', ext)}</p>
+      <a class="btn btn-primary" href="/api/download/${id}">${t('downloadToOpen')}</a>
     </div>`;
   }
   document.getElementById('viewerModal').classList.add('open');
@@ -543,10 +792,10 @@ function viewDoc(id, name, ext) {
   
   if (isMobile) {
     sidebar.classList.add('hidden');
-    btn.innerHTML = '💬<span class="hide-on-mobile"> Hiện bình luận</span>';
+    btn.innerHTML = `💬<span class="hide-on-mobile"> ${t('showComments')}</span>`;
   } else {
     sidebar.classList.remove('hidden');
-    btn.innerHTML = '💬<span class="hide-on-mobile"> Ẩn bình luận</span>';
+    btn.innerHTML = `💬<span class="hide-on-mobile"> ${t('hideComments')}</span>`;
   }
   
   loadComments(id);
@@ -605,11 +854,11 @@ async function renderFullPdf(url, containerId) {
       const notice = document.createElement('div');
       notice.style.padding = '16px';
       notice.style.color = 'var(--muted)';
-      notice.innerHTML = 'Tài liệu quá dài, chỉ hiển thị 20 trang đầu. Vui lòng tải xuống để xem toàn bộ.';
+      notice.innerHTML = t('pdfTooLong');
       container.appendChild(notice);
     }
   } catch (e) {
-    container.innerHTML = '<div style="padding:20px; color:var(--danger);">Lỗi không thể tải PDF trực tiếp. Vui lòng tải xuống để xem.</div>';
+    container.innerHTML = `<div style="padding:20px; color:var(--danger);">${t('pdfError')}</div>`;
   }
 }
 
@@ -673,12 +922,12 @@ async function bulkDownload() {
     // Đợi 300ms giữa các file để tránh chặn popup
     await new Promise(r => setTimeout(r, 300));
   }
-  showToast(`Đang tải ${selectedDocs.size} tài liệu...`, 'success');
+  showToast(t('downloading', selectedDocs.size), 'success');
 }
 
 async function bulkDelete() {
   if (selectedDocs.size === 0) return;
-  if (!confirm(`Xóa ${selectedDocs.size} tài liệu đã chọn?`)) return;
+  if (!confirm(t('confirmBulkDelete', selectedDocs.size))) return;
   
   let successCount = 0;
   for (const id of selectedDocs) {
@@ -686,7 +935,7 @@ async function bulkDelete() {
       const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
       if (res.ok) successCount++;
       else if (res.status === 401) {
-        showToast('Bạn cần đăng nhập admin để xóa', 'error');
+        showToast(t('needAdmin'), 'error');
         break;
       }
     } catch { /* ignore */ }
@@ -695,7 +944,7 @@ async function bulkDelete() {
   selectedDocs.clear();
   updateSelectionBar();
   if (successCount > 0) {
-    showToast(`Đã xóa ${successCount} tài liệu`, 'success');
+    showToast(t('bulkDeleted', successCount), 'success');
     loadDocs();
   }
 }
@@ -704,11 +953,11 @@ async function bulkDelete() {
 
 async function deleteDoc(id, e) {
   e.stopPropagation();
-  if (!confirm('Xóa tài liệu này?')) return;
+  if (!confirm(t('confirmDelete'))) return;
   const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
-  if (res.ok) { showToast('Đã xóa tài liệu', 'success'); loadDocs(); }
-  else if (res.status === 401) { showToast('Bạn cần đăng nhập admin để xóa', 'error'); }
-  else showToast('Lỗi khi xóa', 'error');
+  if (res.ok) { showToast(t('docDeleted'), 'success'); loadDocs(); }
+  else if (res.status === 401) { showToast(t('needAdmin'), 'error'); }
+  else showToast(t('deleteError'), 'error');
 }
 
 // ========== UPLOAD ==========
@@ -749,15 +998,15 @@ async function uploadFiles(files) {
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       if (res.status === 401) {
-        showToast('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+        showToast(t('sessionExpired'), 'error');
         isAdmin = false;
         renderHeaderActions();
         break;
       }
       const data = await res.json();
       if (data.success) showToast(`✓ ${file.name}`, 'success');
-      else showToast(data.error || 'Lỗi upload', 'error');
-    } catch { showToast('Lỗi kết nối', 'error'); }
+      else showToast(data.error || t('uploadError'), 'error');
+    } catch { showToast(t('connectionError'), 'error'); }
     done++;
     fill.style.width = (done / files.length * 100) + '%';
   }
@@ -783,13 +1032,13 @@ async function togglePin(id, e) {
     });
     if (res.ok) {
       doc.pinned = newPinned;
-      showToast(newPinned ? '📌 Đã ghim tài liệu' : 'Đã bỏ ghim', 'success');
+      showToast(newPinned ? t('pinned') : t('unpinned'), 'success');
       filterDocs();
     } else if (res.status === 401) {
-      showToast('Bạn cần đăng nhập admin', 'error');
+      showToast(t('needAdminPin'), 'error');
     }
   } catch {
-    showToast('Lỗi kết nối', 'error');
+    showToast(t('connectionError'), 'error');
   }
 }
 
@@ -798,7 +1047,7 @@ function copyLink(id) {
   const url = new URL(window.location);
   url.searchParams.set('doc', id);
   navigator.clipboard.writeText(url.toString()).then(() => {
-    showToast('Đã copy link chia sẻ', 'success');
+    showToast(t('linkCopied'), 'success');
   });
 }
 
@@ -816,15 +1065,15 @@ async function loadComments(docId) {
     
     const list = document.getElementById('commentsList');
     if (comments.filter(c => c.content).length === 0) {
-      list.innerHTML = '<div style="color:var(--muted); font-size:13px; text-align:center;">Chưa có bình luận nào</div>';
+      list.innerHTML = `<div style="color:var(--muted); font-size:13px; text-align:center;">${t('noComments')}</div>`;
       return;
     }
     
     list.innerHTML = comments.filter(c => c.content).map(c => `
       <div style="background:var(--surface2); padding:10px; border-radius:8px; font-size:13px; position:relative;">
-        <div style="font-weight:600; color:var(--accent); margin-bottom:4px;">${escHtml(c.author)} <span style="color:var(--muted); font-weight:normal; font-size:11px;">${new Date(c.createdAt).toLocaleDateString('vi-VN')}</span></div>
+        <div style="font-weight:600; color:var(--accent); margin-bottom:4px;">${escHtml(c.author)} <span style="color:var(--muted); font-weight:normal; font-size:11px;">${new Date(c.createdAt).toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US')}</span></div>
         <div style="color:var(--text); line-height:1.4;">${escHtml(c.content)}</div>
-        ${isAdmin ? `<button class="btn btn-ghost btn-sm" style="position:absolute; top:4px; right:4px; padding:2px; font-size:10px;" onclick="deleteComment('${c.id}', '${docId}')">Xóa</button>` : ''}
+        ${isAdmin ? `<button class="btn btn-ghost btn-sm" style="position:absolute; top:4px; right:4px; padding:2px; font-size:10px;" onclick="deleteComment('${c.id}', '${docId}')">${t('deleteCommentBtn')}</button>` : ''}
       </div>
     `).join('');
   } catch (e) {
@@ -836,7 +1085,7 @@ async function postComment() {
   if (!currentViewerId) return;
   const author = document.getElementById('commentAuthor').value;
   const content = document.getElementById('commentContent').value;
-  if (!content.trim()) return showToast('Vui lòng nhập nội dung', 'error');
+  if (!content.trim()) return showToast(t('commentEmpty'), 'error');
   
   try {
     const res = await fetch(`/api/comments/${currentViewerId}`, {
@@ -847,7 +1096,7 @@ async function postComment() {
     if (res.ok) {
       document.getElementById('commentContent').value = '';
       loadComments(currentViewerId);
-      showToast('Đã gửi bình luận', 'success');
+      showToast(t('commentSent'), 'success');
     }
   } catch {}
 }
@@ -862,18 +1111,18 @@ async function postReaction(type) {
     });
     if (res.ok) {
       loadComments(currentViewerId);
-      showToast(`Đã ${type === 'like' ? 'thích' : 'không thích'}`, 'success');
+      showToast(t('reacted', type), 'success');
     }
   } catch {}
 }
 
 async function deleteComment(id, docId) {
-  if (!confirm('Xóa bình luận này?')) return;
+  if (!confirm(t('confirmDeleteComment'))) return;
   try {
     const res = await fetch(`/api/comments/${id}`, { method: 'DELETE' });
     if (res.ok) {
       loadComments(docId);
-      showToast('Đã xóa', 'success');
+      showToast(t('deleted'), 'success');
     }
   } catch {}
 }
@@ -883,10 +1132,10 @@ function toggleCommentsSidebar() {
   const btn = document.getElementById('toggleCommentsBtn');
   if (sidebar.classList.contains('hidden')) {
     sidebar.classList.remove('hidden');
-    btn.innerHTML = '💬<span class="hide-on-mobile"> Ẩn bình luận</span>';
+    btn.innerHTML = `💬<span class="hide-on-mobile"> ${t('hideComments')}</span>`;
   } else {
     sidebar.classList.add('hidden');
-    btn.innerHTML = '💬<span class="hide-on-mobile"> Hiện bình luận</span>';
+    btn.innerHTML = `💬<span class="hide-on-mobile"> ${t('showComments')}</span>`;
   }
 }
 
@@ -933,13 +1182,13 @@ async function createCategory() {
       allCategories = (await res.json()).categories;
       renderAdminCategories();
       renderDynamicCategories();
-      showToast('Đã thêm danh mục', 'success');
+      showToast(t('categoryAdded'), 'success');
     }
   } catch {}
 }
 
 async function deleteCategory(name) {
-  if (!confirm(`Xóa danh mục ${name}?`)) return;
+  if (!confirm(t('confirmDeleteCategory', name))) return;
   try {
     const res = await fetch('/api/categories', {
       method: 'DELETE',
@@ -950,7 +1199,7 @@ async function deleteCategory(name) {
       allCategories = (await res.json()).categories;
       renderAdminCategories();
       renderDynamicCategories();
-      showToast('Đã xóa danh mục', 'success');
+      showToast(t('categoryDeleted'), 'success');
     }
   } catch {}
 }
@@ -962,12 +1211,12 @@ async function loadAdminLogs() {
     const logs = await res.json();
     const list = document.getElementById('adminLogsList');
     if (logs.length === 0) {
-      list.innerHTML = '<div style="color:var(--muted); text-align:center;">Chưa có log</div>';
+      list.innerHTML = `<div style="color:var(--muted); text-align:center;">${t('noLogs')}</div>`;
       return;
     }
     list.innerHTML = logs.map(l => `
       <div style="border-bottom:1px solid var(--border); padding-bottom:4px;">
-        <span style="color:var(--muted);">${new Date(l.timestamp).toLocaleString('vi-VN')}</span> - 
+        <span style="color:var(--muted);">${new Date(l.timestamp).toLocaleString(currentLang === 'vi' ? 'vi-VN' : 'en-US')}</span> - 
         <strong style="color:var(--accent);">${l.action}</strong>: 
         <span>${escHtml(l.details)}</span>
       </div>
@@ -981,11 +1230,11 @@ function renderAdminCollections() {
     <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface2); padding:8px 12px; border-radius:8px;">
       <div>
         <strong style="color:var(--text);">${escHtml(c.name)}</strong>
-        <div style="font-size:12px; color:var(--muted);">${allDocs.filter(d => d.collectionIds && d.collectionIds.includes(c.id)).length} tài liệu</div>
+        <div style="font-size:12px; color:var(--muted);">${allDocs.filter(d => d.collectionIds && d.collectionIds.includes(c.id)).length} ${t('docsCount')}</div>
       </div>
       <div>
-        <button class="btn btn-ghost btn-sm" onclick="addSelectedToCol('${c.id}')">+ Thêm tài liệu đang chọn</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCollection('${c.id}')">Xóa</button>
+        <button class="btn btn-ghost btn-sm" onclick="addSelectedToCol('${c.id}')">${t('addSelectedDocs')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCollection('${c.id}')">${t('deleteBtn')}</button>
       </div>
     </div>
   `).join('');
@@ -993,7 +1242,7 @@ function renderAdminCollections() {
 
 async function createCollection() {
   const name = document.getElementById('newColName').value;
-  if (!name.trim()) return showToast('Vui lòng nhập tên', 'error');
+  if (!name.trim()) return showToast(t('inputName'), 'error');
   try {
     const res = await fetch('/api/collections', {
       method: 'POST',
@@ -1004,25 +1253,25 @@ async function createCollection() {
       document.getElementById('newColName').value = '';
       await loadDocs(); // reload to get new collections
       renderAdminCollections();
-      showToast('Đã tạo BST', 'success');
+      showToast(t('collectionCreated'), 'success');
     }
   } catch {}
 }
 
 async function deleteCollection(id) {
-  if (!confirm('Xóa BST này? Các tài liệu sẽ không bị xóa.')) return;
+  if (!confirm(t('confirmDeleteCollection'))) return;
   try {
     const res = await fetch(`/api/collections/${id}`, { method: 'DELETE' });
     if (res.ok) {
       await loadDocs();
       renderAdminCollections();
-      showToast('Đã xóa', 'success');
+      showToast(t('collectionDeleted'), 'success');
     }
   } catch {}
 }
 
 async function addSelectedToCol(colId) {
-  if (selectedDocs.size === 0) return showToast('Chưa chọn tài liệu nào', 'error');
+  if (selectedDocs.size === 0) return showToast(t('noDocsSelected'), 'error');
   const docIds = Array.from(selectedDocs);
   try {
     const res = await fetch(`/api/collections/${colId}/docs`, {
@@ -1034,7 +1283,7 @@ async function addSelectedToCol(colId) {
       await loadDocs();
       renderAdminCollections();
       clearSelection();
-      showToast('Đã thêm vào BST', 'success');
+      showToast(t('addedToCollection'), 'success');
     }
   } catch {}
 }
@@ -1042,10 +1291,10 @@ async function addSelectedToCol(colId) {
 // ========== TOAST ==========
 
 function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type}`;
-  setTimeout(() => t.classList.add('show'), 10);
-  setTimeout(() => t.classList.remove('show'), 2800);
+  const toastEl = document.getElementById('toast');
+  toastEl.textContent = msg; toastEl.className = `toast ${type}`;
+  setTimeout(() => toastEl.classList.add('show'), 10);
+  setTimeout(() => toastEl.classList.remove('show'), 2800);
 }
 
 async function saveGlobalSettings() {
@@ -1072,7 +1321,7 @@ async function saveGlobalSettings() {
     if (res.ok) {
       const data = await res.json();
       applyGlobalSettings(data.settings);
-      showToast('Đã lưu cấu hình giao diện', 'success');
+      showToast(t('settingsSaved'), 'success');
       
       // Reset file inputs
       document.getElementById('settingLogo').value = '';
@@ -1080,10 +1329,10 @@ async function saveGlobalSettings() {
       document.getElementById('settingClearLogo').checked = false;
       document.getElementById('settingClearBgImage').checked = false;
     } else {
-      showToast('Lưu cấu hình thất bại', 'error');
+      showToast(t('settingsFailed'), 'error');
     }
   } catch {
-    showToast('Lỗi kết nối', 'error');
+    showToast(t('connectionError'), 'error');
   }
 }
 

@@ -28,7 +28,7 @@ exports.list = async (req, res, next) => {
 exports.upload = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Không có file' });
+      return res.status(400).json({ error: req.t('noFile') });
     }
 
     const originalName = fixVietnameseName(req.file.originalname);
@@ -56,7 +56,7 @@ exports.upload = async (req, res, next) => {
       pinned: false,
     });
 
-    await logAction('UPLOAD', `Admin đã tải lên file: ${originalName}`);
+    await logAction('UPLOAD', req.t('uploadLog', originalName));
 
     await redisClient.del('docshare:cache:documents');
     res.status(201).json({ success: true, doc });
@@ -72,7 +72,7 @@ exports.upload = async (req, res, next) => {
 exports.view = async (req, res, next) => {
   try {
     const doc = await Document.findById(req.params.id).exec();
-    if (!doc) return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
+    if (!doc) return res.status(404).json({ error: req.t('docNotFound') });
 
     doc.views = (doc.views || 0) + 1;
     await doc.save();
@@ -84,7 +84,7 @@ exports.view = async (req, res, next) => {
     }
 
     const filePath = path.join(config.uploadDir, doc.filename);
-    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File không tồn tại' });
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: req.t('fileNotFound') });
 
     res.sendFile(filePath);
   } catch (error) {
@@ -95,7 +95,7 @@ exports.view = async (req, res, next) => {
 exports.download = async (req, res, next) => {
   try {
     const doc = await Document.findById(req.params.id).exec();
-    if (!doc) return res.status(404).json({ error: 'Không tìm thấy tài liệu' });
+    if (!doc) return res.status(404).json({ error: req.t('docNotFound') });
 
     doc.downloads = (doc.downloads || 0) + 1;
     await doc.save();
@@ -107,7 +107,7 @@ exports.download = async (req, res, next) => {
     }
 
     const filePath = path.join(config.uploadDir, doc.filename);
-    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File không tồn tại' });
+    if (!fs.existsSync(filePath)) return res.status(404).json({ error: req.t('fileNotFound') });
 
     res.sendFile(filePath);
   } catch (error) {
@@ -123,7 +123,7 @@ exports.update = async (req, res, next) => {
     if (req.body.pinned !== undefined) updateData.pinned = Boolean(req.body.pinned);
 
     const doc = await Document.findByIdAndUpdate(req.params.id, updateData, { new: true }).exec();
-    if (!doc) return res.status(404).json({ error: 'Không tìm thấy' });
+    if (!doc) return res.status(404).json({ error: req.t('notFound') });
 
     await redisClient.del('docshare:cache:documents');
     res.json({ success: true, doc });
@@ -135,7 +135,7 @@ exports.update = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
   try {
     const doc = await Document.findByIdAndDelete(req.params.id).exec();
-    if (!doc) return res.status(404).json({ error: 'Không tìm thấy' });
+    if (!doc) return res.status(404).json({ error: req.t('notFound') });
 
     if (doc.driveId) {
       await deleteFromDrive(doc.driveId);
@@ -150,10 +150,10 @@ exports.remove = async (req, res, next) => {
       }
     }
 
-    await logAction('DELETE', `Admin đã xóa file: ${doc.originalName}`);
+    await logAction('DELETE', req.t('deleteLog', doc.originalName));
 
     await redisClient.del('docshare:cache:documents');
-    res.json({ success: true, message: 'Đã xóa tài liệu' });
+    res.json({ success: true, message: req.t('docDeleted') });
   } catch (error) {
     next(error);
   }

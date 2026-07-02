@@ -6,14 +6,14 @@ function errorHandler(err, req, res, _next) {
   // Multer errors
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({
-      error: 'File quá lớn. Tối đa 100MB.',
+      error: req.t('fileTooLarge'),
       code: 'LIMIT_FILE_SIZE',
     });
   }
 
-  if (err.message === 'Định dạng file không được hỗ trợ') {
+  if (err.message === 'INVALID_FILE_TYPE') {
     return res.status(400).json({
-      error: err.message,
+      error: req.t('invalidFileType'),
       code: 'INVALID_FILE_TYPE',
     });
   }
@@ -21,7 +21,7 @@ function errorHandler(err, req, res, _next) {
   // Generic error
   console.error('❌ Server error:', err.message);
   return res.status(500).json({
-    error: 'Đã xảy ra lỗi máy chủ',
+    error: req.t('internalError'),
     code: 'INTERNAL_ERROR',
   });
 }
