@@ -108,7 +108,7 @@ jobs:
             # Tự động cập nhật Nginx để nhận file tĩnh (Frontend) và cấu hình mới nhất
             # Lệnh này chỉ cập nhật lại riêng container Nginx mà không làm gián đoạn Database
             echo "Đang cập nhật Nginx..."
-            docker-compose -p docshare up -d docshare_nginx
+            docker-compose -p docshare up -d --force-recreate nginx
             
             # Đợi 3 giây để app kịp khởi động
             sleep 3
