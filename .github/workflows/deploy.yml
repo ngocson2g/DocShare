@@ -121,10 +121,11 @@ jobs:
             # TRÁO ĐỔI: Chuyển thư mục current sang trỏ vào code mới
             ln -sfn $RELEASE_DIR $APP_DIR/current
             
-            # Khởi động lại web
+            # Khởi động lại web (delete trước để PM2 đọc lại cwd mới từ ecosystem config)
             cd $APP_DIR/current
             echo "Đang khởi động lại PM2..."
-            pm2 start ecosystem.config.js --env production --update-env || pm2 reload ecosystem.config.js --env production
+            pm2 delete docshare-api 2>/dev/null || true
+            pm2 start ecosystem.config.js --env production
             
             # Tự động cập nhật Nginx để nhận file tĩnh (Frontend) và cấu hình mới nhất
             # Lệnh này chỉ cập nhật lại riêng container Nginx mà không làm gián đoạn Database
@@ -145,7 +146,8 @@ jobs:
                 cd $APP_DIR/current
                 
                 # Khởi động lại bản cũ để cứu sống web
-                pm2 reload ecosystem.config.js --env production
+                pm2 delete docshare-api 2>/dev/null || true
+                pm2 start ecosystem.config.js --env production
                 echo "✅ Rollback thành công về bản: \$PREV_RELEASE"
               else
                 echo "Không tìm thấy bản code cũ để quay lại!"

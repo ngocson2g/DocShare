@@ -3,7 +3,9 @@ const path = require('path');
 // Load .env từ project root
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
-const ROOT_DIR = path.join(__dirname, '..', '..');
+// Dùng process.cwd() thay vì __dirname để luôn đi qua symlink /current
+// (__dirname resolve symlink thành path thực của release cũ, có thể bị xóa khi dọn rác)
+const ROOT_DIR = process.cwd();
 
 const config = {
   port: parseInt(process.env.PORT, 10) || 3000,
