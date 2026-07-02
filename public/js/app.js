@@ -139,6 +139,16 @@ const i18n = {
     settingsSaved: 'Đã lưu cấu hình giao diện',
     settingsFailed: 'Lưu cấu hình thất bại',
     anonymous: 'Ẩn danh',
+
+    categories: {
+      'Chung': 'Chung',
+      'Hướng dẫn': 'Hướng dẫn',
+      'Báo cáo': 'Báo cáo',
+      'Hợp đồng': 'Hợp đồng',
+      'Kỹ thuật': 'Kỹ thuật',
+      'Nhân sự': 'Nhân sự',
+      'Tài chính': 'Tài chính'
+    }
   },
 
   en: {
@@ -265,6 +275,16 @@ const i18n = {
     settingsSaved: 'Settings saved',
     settingsFailed: 'Failed to save settings',
     anonymous: 'Anonymous',
+    
+    categories: {
+      'Chung': 'General',
+      'Hướng dẫn': 'Guides',
+      'Báo cáo': 'Reports',
+      'Hợp đồng': 'Contracts',
+      'Kỹ thuật': 'Engineering',
+      'Nhân sự': 'Human Resources',
+      'Tài chính': 'Finance'
+    }
   }
 };
 
@@ -272,6 +292,13 @@ function t(key, ...args) {
   const val = i18n[currentLang][key] || key;
   if (typeof val === 'function') return val(...args);
   return val;
+}
+
+function tCat(cat) {
+  if (i18n[currentLang].categories && i18n[currentLang].categories[cat]) {
+    return i18n[currentLang].categories[cat];
+  }
+  return cat;
 }
 
 function toggleLanguage() {
@@ -297,6 +324,7 @@ function toggleLanguage() {
   if (searchInput) searchInput.placeholder = t('searchPlaceholder');
   
   renderHeaderActions();
+  renderDynamicCategories();
   renderCollections();
   filterDocs();
 }
@@ -420,7 +448,7 @@ function renderDynamicCategories() {
   allCategories.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = `filter-chip hidden-chip ${currentCategory === cat ? 'active' : ''}`;
-    btn.textContent = cat;
+    btn.textContent = tCat(cat);
     btn.onclick = function() { setCategory(cat, this); };
     wrapper.appendChild(btn);
   });
@@ -428,7 +456,7 @@ function renderDynamicCategories() {
   // Update upload select (id="categoryInput" trong HTML)
   const uploadCat = document.getElementById('categoryInput');
   if (uploadCat && allCategories.length > 0) {
-    uploadCat.innerHTML = allCategories.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('') + `<option value="Khác">Khác</option>`;
+    uploadCat.innerHTML = allCategories.map(c => `<option value="${escHtml(c)}">${escHtml(tCat(c))}</option>`).join('') + `<option value="Khác">${t('other')}</option>`;
   }
 }
 
@@ -682,7 +710,7 @@ function docCard(d) {
       </div>
       ${d.description ? `<div class="doc-description">${escHtml(d.description)}</div>` : ''}
       <div class="doc-footer">
-        <span class="category-badge">${escHtml(d.category)}</span>
+        <span class="category-badge">${escHtml(tCat(d.category))}</span>
         <div class="doc-actions">
           ${pinBtn}
           <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}','${escHtml(d.originalName)}','${ext}')">👁 ${t('viewBtn')}</button>
