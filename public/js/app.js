@@ -694,6 +694,9 @@ function docCard(d) {
   </div>`;
 }
 
+// Global cache for PDF thumbnails to prevent heavy re-rendering
+const pdfThumbCache = {};
+
 /**
  * Render PDF previews trên tất cả canvas có class .pdf-thumb
  * Sử dụng pdf.js để vẽ trang đầu tiên của mỗi file PDF.
@@ -706,6 +709,22 @@ function renderPdfPreviews() {
     const docId = canvas.dataset.pdfId;
     if (!docId || canvas.dataset.rendered) return;
     canvas.dataset.rendered = 'true'; // Đánh dấu để tránh render lại
+    
+    // Nếu đã cache dataURL, nạp thẳng từ cache
+    if (pdfThumbCache[docId] && typeof pdfThumbCache[docId] === 'string' && pdfThumbCache[docId] !== 'rendering' && pdfThumbCache[docId] !== 'error') {
+       const img = new Image();
+       img.onload = () => {
+         canvas.width = img.width;
+         canvas.height = img.height;
+         canvas.getContext('2d').drawImage(img, 0, 0);
+       };
+       img.src = pdfThumbCache[docId];
+       return;
+    }
+    
+    // Nếu đang render, bỏ qua để tránh spam CPU
+    if (pdfThumbCache[docId] === 'rendering') return;
+    pdfThumbCache[docId] = 'rendering';
     
     const url = `/api/view/${docId}`;
     pdfjsLib.getDocument(url).promise.then(pdf => {
@@ -721,10 +740,27 @@ function renderPdfPreviews() {
       canvas.height = scaledViewport.height;
       
       const ctx = canvas.getContext('2d');
-      page.render({ canvasContext: ctx, viewport: scaledViewport });
+      return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise.then(() => {
+        const dataUrl = canvas.toDataURL();
+        pdfThumbCache[docId] = dataUrl;
+        
+        // Cập nhật lại tất cả các canvas khác của cùng docId (trong trường hợp spam re-render)
+        document.querySelectorAll(`.pdf-thumb[data-pdf-id="${docId}"]`).forEach(c => {
+          if (c !== canvas) {
+             const img = new Image();
+             img.onload = () => {
+               c.width = img.width;
+               c.height = img.height;
+               c.getContext('2d').drawImage(img, 0, 0);
+             };
+             img.src = dataUrl;
+          }
+        });
+      });
     }).catch(() => {
       // Nếu lỗi, hiển thị icon thay thế
       canvas.parentElement.innerHTML = '<div class="doc-preview-icon">PDF</div>';
+      pdfThumbCache[docId] = 'error';
     });
   });
 }
