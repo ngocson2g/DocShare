@@ -7,7 +7,7 @@
 <title>DocShare — Kho tài liệu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -29,13 +29,13 @@
     <div class="upload-zone" id="dropZone">
       <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.svg">
       <div class="upload-icon">📤</div>
-      <h3>Kéo thả file vào đây</h3>
-      <p>hoặc click để chọn file — PDF, Word, Excel, PowerPoint, ảnh, text<br>Tối đa 100MB mỗi file</p>
+      <h3 data-i18n="dropTitle">Kéo thả file vào đây</h3>
+      <p data-i18n-html="dropDesc">hoặc click để chọn file — PDF, Word, Excel, PowerPoint, ảnh, text<br><span data-i18n="dropLimit">Tối đa 100MB mỗi file</span></p>
     </div>
 
     <div class="upload-meta">
       <div class="field">
-        <label>Danh mục</label>
+        <label data-i18n="labelCategory">Danh mục</label>
         <select id="categoryInput">
           <option value="Chung">Chung</option>
           <option value="Hướng dẫn">Hướng dẫn</option>
@@ -47,8 +47,8 @@
         </select>
       </div>
       <div class="field">
-        <label>Mô tả ngắn (tùy chọn)</label>
-        <input type="text" id="descInput" placeholder="Mô tả về tài liệu...">
+        <label data-i18n="labelDescription">Mô tả ngắn (tùy chọn)</label>
+        <input type="text" id="descInput" data-i18n="descPlaceholder" placeholder="Mô tả về tài liệu...">
       </div>
     </div>
 
@@ -61,15 +61,15 @@
   <div class="stats-bar" id="statsBar">
     <div class="stat">
       <div class="stat-num" id="totalDocs">0</div>
-      <div class="stat-label">Tài liệu</div>
+      <div class="stat-label" data-i18n="statDocs">Tài liệu</div>
     </div>
     <div class="stat">
       <div class="stat-num" id="totalSize">0</div>
-      <div class="stat-label">Tổng dung lượng</div>
+      <div class="stat-label" data-i18n="statSize">Tổng dung lượng</div>
     </div>
     <div class="stat">
       <div class="stat-num" id="totalDownloads">0</div>
-      <div class="stat-label">Lượt tải</div>
+      <div class="stat-label" data-i18n="statDownloads">Lượt tải</div>
     </div>
   </div>
 
@@ -80,22 +80,22 @@
       <input class="search-box" id="searchInput" placeholder="Tìm tài liệu..." oninput="currentPage=1; filterDocs()">
     </div>
     <select class="sort-select" id="sortSelect" onchange="filterDocs()">
-      <option value="newest">Mới nhất</option>
-      <option value="oldest">Cũ nhất</option>
-      <option value="name-asc">Tên A → Z</option>
-      <option value="name-desc">Tên Z → A</option>
-      <option value="downloads">Nhiều lượt tải</option>
-      <option value="size-desc">Dung lượng lớn</option>
-      <option value="size-asc">Dung lượng nhỏ</option>
+      <option value="newest" data-i18n="newest">Mới nhất</option>
+      <option value="oldest" data-i18n="oldest">Cũ nhất</option>
+      <option value="name-asc" data-i18n="nameAsc">Tên A → Z</option>
+      <option value="name-desc" data-i18n="nameDesc">Tên Z → A</option>
+      <option value="downloads" data-i18n="mostDownloads">Nhiều lượt tải</option>
+      <option value="size-desc" data-i18n="sizeLarge">Dung lượng lớn</option>
+      <option value="size-asc" data-i18n="sizeSmall">Dung lượng nhỏ</option>
     </select>
     <select class="sort-select" id="typeFilter" onchange="currentPage=1; filterDocs()">
-      <option value="">Tất cả loại file</option>
+      <option value="" data-i18n="allTypes">Tất cả loại file</option>
       <option value="pdf">PDF</option>
       <option value="word">Word</option>
       <option value="excel">Excel</option>
       <option value="ppt">PowerPoint</option>
-      <option value="image">Ảnh</option>
-      <option value="text">Văn bản</option>
+      <option value="image" data-i18n="image">Ảnh</option>
+      <option value="text" data-i18n="text">Văn bản</option>
     </select>
   </div>
   <div class="filters" style="margin-top: -16px;">
@@ -138,7 +138,7 @@
     <!-- COMMENTS & REACTIONS SECTION -->
     <div class="comments-sidebar" id="commentsSidebar">
       <div class="comments-header" style="padding: 16px; border-bottom: 1px solid var(--border);">
-        <h3 style="margin:0; font-size: 16px; color: var(--text);">Bình luận & Đánh giá</h3>
+        <h3 style="margin:0; font-size: 16px; color: var(--text);" data-i18n="commentsTitle">Bình luận & Đánh giá</h3>
         <div class="reactions-stats" id="reactionStats" style="margin-top: 8px; font-size: 13px; color: var(--muted);">
           👍 0 | 👎 0
         </div>
@@ -150,12 +150,12 @@
       
       <div class="comments-input" style="padding: 16px; border-top: 1px solid var(--border);">
         <div style="display:flex; gap:8px; margin-bottom: 8px;">
-          <button class="btn btn-ghost btn-sm" onclick="postReaction('like')" style="flex:1">👍 Thích</button>
-          <button class="btn btn-ghost btn-sm" onclick="postReaction('dislike')" style="flex:1">👎 Không thích</button>
+          <button class="btn btn-ghost btn-sm" onclick="postReaction('like')" style="flex:1" data-i18n="likeBtn">👍 Thích</button>
+          <button class="btn btn-ghost btn-sm" onclick="postReaction('dislike')" style="flex:1" data-i18n="dislikeBtn">👎 Không thích</button>
         </div>
-        <input type="text" id="commentAuthor" placeholder="Tên (tùy chọn)" class="input-box" style="margin-bottom:8px;">
-        <textarea id="commentContent" placeholder="Viết bình luận..." class="input-box" style="min-height: 60px; resize:none; margin-bottom:8px;"></textarea>
-        <button class="btn btn-primary btn-sm" onclick="postComment()" style="width:100%">Gửi bình luận</button>
+        <input type="text" id="commentAuthor" data-i18n="authorPlaceholder" placeholder="Tên (tùy chọn)" class="input-box" style="margin-bottom:8px;">
+        <textarea id="commentContent" data-i18n="commentPlaceholder" placeholder="Viết bình luận..." class="input-box" style="min-height: 60px; resize:none; margin-bottom:8px;"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="postComment()" style="width:100%" data-i18n="submitComment">Gửi bình luận</button>
       </div>
     </div>
   </div>
@@ -165,41 +165,41 @@
 <div class="modal-overlay" id="adminDashboardModal">
   <div class="modal admin-dashboard-modal">
     <div class="modal-header">
-      <div class="modal-title"><span>Quản trị viên - Dashboard</span></div>
-      <button class="btn btn-ghost btn-sm" onclick="closeAdminDashboard()">✕ Đóng</button>
+      <div class="modal-title"><span data-i18n="dashTitle">Quản trị viên - Dashboard</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeAdminDashboard()" data-i18n="dashClose">✕ Đóng</button>
     </div>
     <div class="modal-body" style="padding: 24px; display:flex; flex-direction:column; gap: 24px; overflow-y:auto;">
       <div class="dashboard-stats" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
         <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
           <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalDocs">0</div>
-          <div style="font-size:13px; color:var(--muted);">Tổng tài liệu</div>
+          <div style="font-size:13px; color:var(--muted);" data-i18n="dashTotalDocs">Tổng tài liệu</div>
         </div>
         <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
           <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalViews">0</div>
-          <div style="font-size:13px; color:var(--muted);">Tổng lượt xem</div>
+          <div style="font-size:13px; color:var(--muted);" data-i18n="dashTotalViews">Tổng lượt xem</div>
         </div>
         <div class="stat-card" style="padding:16px; background:var(--surface2); border-radius:12px; text-align:center;">
           <div style="font-size:24px; font-weight:bold; color:var(--accent);" id="dashTotalDownloads">0</div>
-          <div style="font-size:13px; color:var(--muted);">Tổng lượt tải</div>
+          <div style="font-size:13px; color:var(--muted);" data-i18n="dashTotalDownloads">Tổng lượt tải</div>
         </div>
       </div>
       
       <div class="admin-dashboard-panels">
         <!-- Manage Collections -->
         <div style="flex:1;">
-          <h3>Quản lý Danh mục & Bộ sưu tập</h3>
+          <h3 data-i18n="manageTitle">Quản lý Danh mục & Bộ sưu tập</h3>
           
           <div style="margin-bottom: 16px;">
             <div style="display:flex; gap:8px; margin-bottom:8px;">
-              <input type="text" id="newCategoryName" placeholder="Tên danh mục mới" class="input-box" style="flex:1;">
-              <button class="btn btn-primary btn-sm" onclick="createCategory()">Thêm DM</button>
+              <input type="text" id="newCategoryName" data-i18n="newCategoryPlaceholder" placeholder="Tên danh mục mới" class="input-box" style="flex:1;">
+              <button class="btn btn-primary btn-sm" onclick="createCategory()" data-i18n="addCategory">Thêm DM</button>
             </div>
             <div id="adminCategoriesList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
           </div>
           
           <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <input type="text" id="newColName" placeholder="Tên bộ sưu tập mới" class="input-box" style="flex:1;">
-            <button class="btn btn-primary btn-sm" onclick="createCollection()">Tạo BST</button>
+            <input type="text" id="newColName" data-i18n="newCollectionPlaceholder" placeholder="Tên bộ sưu tập mới" class="input-box" style="flex:1;">
+            <button class="btn btn-primary btn-sm" onclick="createCollection()" data-i18n="createCollection">Tạo BST</button>
           </div>
           <div id="adminColsList" style="display:flex; flex-direction:column; gap:8px;">
             <!-- Admin collection list -->
@@ -208,7 +208,7 @@
         
         <!-- Admin Logs -->
         <div style="flex:1;">
-          <h3>Nhật ký hoạt động (Logs)</h3>
+          <h3 data-i18n="logsTitle">Nhật ký hoạt động (Logs)</h3>
           <div id="adminLogsList" style="height: 300px; overflow-y:auto; background:var(--surface2); padding:12px; border-radius:8px; font-size:12px; display:flex; flex-direction:column; gap:8px;">
             <!-- Logs render here -->
           </div>
@@ -216,39 +216,39 @@
       </div>
       
       <div style="margin-top:24px; border-top:1px solid var(--border); padding-top:16px;">
-        <h3>Cấu hình Giao diện Chung (Global Settings)</h3>
+        <h3 data-i18n="settingsTitle">Cấu hình Giao diện Chung (Global Settings)</h3>
         <div style="display:flex; flex-wrap:wrap; gap:16px; background:var(--surface2); padding:16px; border-radius:8px;">
           <div style="flex:1; min-width:200px;">
-            <label style="display:block; margin-bottom:4px; font-weight:bold;">Chế độ hiển thị (Theme):</label>
+            <label style="display:block; margin-bottom:4px; font-weight:bold;" data-i18n="themeLabel">Chế độ hiển thị (Theme):</label>
             <select id="settingTheme" class="input-box" style="margin-bottom:8px;">
-              <option value="dark">Đen (Mặc định)</option>
-              <option value="light">Trắng (Sáng)</option>
-              <option value="blue">Xanh dương (Blue)</option>
-              <option value="green">Xanh lá (Green)</option>
-              <option value="pink">Hồng (Pink)</option>
-              <option value="purple">Tím (Purple)</option>
-              <option value="orange">Cam (Orange)</option>
-              <option value="red">Đỏ (Red)</option>
+              <option value="dark" data-i18n="themeDark">Đen (Mặc định)</option>
+              <option value="light" data-i18n="themeLight">Trắng (Sáng)</option>
+              <option value="blue" data-i18n="themeBlue">Xanh dương (Blue)</option>
+              <option value="green" data-i18n="themeGreen">Xanh lá (Green)</option>
+              <option value="pink" data-i18n="themePink">Hồng (Pink)</option>
+              <option value="purple" data-i18n="themePurple">Tím (Purple)</option>
+              <option value="orange" data-i18n="themeOrange">Cam (Orange)</option>
+              <option value="red" data-i18n="themeRed">Đỏ (Red)</option>
             </select>
             
-            <label style="display:block; margin-bottom:4px; font-weight:bold;">Tên ứng dụng:</label>
+            <label style="display:block; margin-bottom:4px; font-weight:bold;" data-i18n="appNameLabel">Tên ứng dụng:</label>
             <input type="text" id="settingAppName" class="input-box" style="margin-bottom:8px;">
-            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingHideAppName"> Ẩn tên ứng dụng</label></div>
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingHideAppName"> <span data-i18n="hideAppNameLabel">Ẩn tên ứng dụng</span></label></div>
             
-            <label style="display:block; margin-bottom:4px; font-weight:bold;">Logo (Thay dòng chữ DocShare):</label>
+            <label style="display:block; margin-bottom:4px; font-weight:bold;" data-i18n="logoLabel">Logo (Thay dòng chữ DocShare):</label>
             <input type="file" id="settingLogo" accept="image/*" style="margin-bottom:8px;">
-            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearLogo"> Xóa logo hiện tại (trở về chữ mặc định)</label></div>
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearLogo"> <span data-i18n="clearLogoLabel">Xóa logo hiện tại (trở về chữ mặc định)</span></label></div>
           </div>
           <div style="flex:1; min-width:200px;">
-            <label style="display:block; margin-bottom:4px; font-weight:bold;">Màu nền trang (Mã HEX):</label>
+            <label style="display:block; margin-bottom:4px; font-weight:bold;" data-i18n="bgColorLabel">Màu nền trang (Mã HEX):</label>
             <input type="color" id="settingBgColor" style="margin-bottom:8px; width:60px; height:30px;">
             
-            <label style="display:block; margin-bottom:4px; font-weight:bold;">Ảnh nền trang:</label>
+            <label style="display:block; margin-bottom:4px; font-weight:bold;" data-i18n="bgImageLabel">Ảnh nền trang:</label>
             <input type="file" id="settingBgImage" accept="image/*" style="margin-bottom:8px;">
-            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearBgImage"> Xóa ảnh nền hiện tại</label></div>
+            <div style="font-size:12px; margin-bottom:8px;"><label><input type="checkbox" id="settingClearBgImage"> <span data-i18n="clearBgLabel">Xóa ảnh nền hiện tại</span></label></div>
           </div>
         </div>
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveGlobalSettings()">Lưu cấu hình</button>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveGlobalSettings()" data-i18n="saveSettings">Lưu cấu hình</button>
       </div>
 
     </div>
@@ -261,21 +261,21 @@
   <div class="login-card">
     <div class="login-header">
       <div class="login-icon">🔐</div>
-      <h2>Đăng nhập Admin</h2>
-      <p>Nhập thông tin để quản lý tài liệu</p>
+      <h2 data-i18n="loginTitle">Đăng nhập Admin</h2>
+      <p data-i18n="loginSubtitle">Nhập thông tin để quản lý tài liệu</p>
     </div>
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="field">
-        <label>Tên đăng nhập</label>
+        <label data-i18n="labelUsername">Tên đăng nhập</label>
         <input type="text" id="loginUsername" placeholder="admin" autocomplete="username" required>
       </div>
       <div class="field">
-        <label>Mật khẩu</label>
+        <label data-i18n="labelPassword">Mật khẩu</label>
         <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
       </div>
       <div class="login-error" id="loginError"></div>
-      <button type="submit" class="btn btn-primary login-submit">Đăng nhập</button>
-      <button type="button" class="btn btn-ghost login-cancel" onclick="closeLogin()">Hủy</button>
+      <button type="submit" class="btn btn-primary login-submit" data-i18n="loginSubmit">Đăng nhập</button>
+      <button type="button" class="btn btn-ghost login-cancel" onclick="closeLogin()" data-i18n="loginCancel">Hủy</button>
     </form>
   </div>
 </div>
@@ -283,13 +283,13 @@
 <!-- SELECTION BAR -->
 <div class="selection-bar" id="selectionBar">
   <div class="selection-info">
-    <span>Đã chọn <strong id="selectionCount">0</strong> tài liệu</span>
+    <span><span data-i18n="selected">Đã chọn</span> <strong id="selectionCount">0</strong> <span data-i18n="documents">tài liệu</span></span>
   </div>
   <div class="selection-actions">
-    <button class="btn btn-ghost btn-sm" onclick="selectAllOnPage()">Chọn tất cả</button>
-    <button class="btn btn-primary btn-sm" onclick="bulkDownload()">⬇ Tải xuống</button>
-    <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑 Xóa</button>
-    <button class="btn btn-ghost btn-sm" onclick="clearSelection()">✕ Bỏ chọn</button>
+    <button class="btn btn-ghost btn-sm" onclick="selectAllOnPage()" data-i18n="selectAll">Chọn tất cả</button>
+    <button class="btn btn-primary btn-sm" onclick="bulkDownload()" data-i18n="bulkDownload">⬇ Tải xuống</button>
+    <button class="btn btn-danger btn-sm" onclick="bulkDelete()" data-i18n="bulkDelete">🗑 Xóa</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearSelection()" data-i18n="deselect">✕ Bỏ chọn</button>
   </div>
 </div>
 
@@ -301,19 +301,19 @@
     <div class="footer-content">
       <div class="footer-brand">
         <div class="logo">Doc<span>Share</span></div>
-        <p>Hệ thống chia sẻ tài liệu nội bộ.<br>Upload, xem và quản lý tài liệu dễ dàng.</p>
+        <p data-i18n-html="footerDesc">Hệ thống chia sẻ tài liệu nội bộ.<br>Upload, xem và quản lý tài liệu dễ dàng.</p>
       </div>
       <div class="footer-links">
-        <h4>Danh mục</h4>
-        <a href="#" onclick="setCategory('', document.querySelector('.filter-chip')); return false;">Tất cả tài liệu</a>
-        <a href="#" onclick="setCategory('recent', null); return false;">Gần đây</a>
-        <a href="#" onclick="setCategory('Hướng dẫn', null); return false;">Hướng dẫn</a>
-        <a href="#" onclick="setCategory('Báo cáo', null); return false;">Báo cáo</a>
+        <h4 data-i18n="footerCategory">Danh mục</h4>
+        <a href="#" onclick="setCategory('', document.querySelector('.filter-chip')); return false;" data-i18n="footerAllDocs">Tất cả tài liệu</a>
+        <a href="#" onclick="setCategory('recent', null); return false;" data-i18n="footerRecent">Gần đây</a>
+        <a href="#" onclick="setCategory('Hướng dẫn', null); return false;" data-i18n="footerGuide">Hướng dẫn</a>
+        <a href="#" onclick="setCategory('Báo cáo', null); return false;" data-i18n="footerReport">Báo cáo</a>
       </div>
       <div class="footer-links">
-        <h4>Hỗ trợ</h4>
-        <a href="#" onclick="window.settingsManager.togglePanel(); return false;">Cài đặt giao diện</a>
-        <a href="#" onclick="openLogin(); return false;">Đăng nhập Admin</a>
+        <h4 data-i18n="footerSupport">Hỗ trợ</h4>
+        <a href="#" onclick="window.settingsManager.togglePanel(); return false;" data-i18n="footerSettings">Cài đặt giao diện</a>
+        <a href="#" onclick="openLogin(); return false;" data-i18n="footerLogin">Đăng nhập Admin</a>
       </div>
     </div>
     <div class="footer-bottom">

@@ -23,6 +23,14 @@ body {
   z-index: 0;
 }
 
+html[lang="en"] body {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+html[lang="en"] .logo, html[lang="en"] .btn, html[lang="en"] .upload-zone h3, html[lang="en"] .filter-chip, html[lang="en"] .search-box, html[lang="en"] .input-box, html[lang="en"] .sort-select, html[lang="en"] .stat-num, html[lang="en"] .page-btn, html[lang="en"] .empty-state h3, html[lang="en"] .login-header h2 {
+  font-family: 'Inter', sans-serif;
+}
+
 body.has-bg-image::before {
   content: '';
   position: fixed;
