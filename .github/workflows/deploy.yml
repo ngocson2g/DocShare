@@ -67,12 +67,33 @@ jobs:
           
           echo "Bắt đầu deploy phiên bản: $RELEASE_ID"
           
-          # Đảm bảo cấu trúc thư mục tồn tại trên server
-          ssh -p $SERVER_PORT root@$SERVER_IP "mkdir -p $APP_DIR/releases $SHARED_DIR/data"
+          # Đảm bảo cấu trúc thư mục tồn tại trên server (bao gồm cả subfolder uploads)
+          ssh -p $SERVER_PORT root@$SERVER_IP "mkdir -p $APP_DIR/releases $SHARED_DIR/data/uploads"
           
           # Migration (chỉ chạy lần đầu tiên): Di chuyển file .env và data cũ vào thư mục shared
           ssh -p $SERVER_PORT root@$SERVER_IP "if [ -f $APP_DIR/.env ]; then mv $APP_DIR/.env $SHARED_DIR/; fi"
-          ssh -p $SERVER_PORT root@$SERVER_IP "if [ -d $APP_DIR/data ] && [ ! -L $APP_DIR/data ]; then mv -n $APP_DIR/data/* $SHARED_DIR/data/ 2>/dev/null || true; rm -rf $APP_DIR/data; fi"
+          
+          # Migration data: Kiểm tra cả trong thư mục gốc và trong release current đang chạy
+          ssh -p $SERVER_PORT root@$SERVER_IP << 'MIGRATE'
+            SHARED_DIR="/root/docsharev2/shared"
+            APP_DIR="/root/docsharev2"
+            
+            # Case 1: Thư mục data nằm ở thư mục gốc (không phải symlink)
+            if [ -d "$APP_DIR/data" ] && [ ! -L "$APP_DIR/data" ]; then
+              echo "Đang migrate data từ thư mục gốc..."
+              cp -rn $APP_DIR/data/* $SHARED_DIR/data/ 2>/dev/null || true
+              rm -rf $APP_DIR/data
+            fi
+            
+            # Case 2: File uploads nằm trong release current hiện tại (không qua symlink)
+            CURRENT_RELEASE=$(readlink -f $APP_DIR/current 2>/dev/null || echo "")
+            if [ -n "$CURRENT_RELEASE" ] && [ -d "$CURRENT_RELEASE/data/uploads" ] && [ ! -L "$CURRENT_RELEASE/data" ]; then
+              echo "Đang migrate uploads từ release hiện tại..."
+              cp -rn $CURRENT_RELEASE/data/uploads/* $SHARED_DIR/data/uploads/ 2>/dev/null || true
+            fi
+            
+            echo "Thư mục shared/data/uploads hiện có $(ls -1 $SHARED_DIR/data/uploads/ 2>/dev/null | wc -l) file"
+          MIGRATE
 
           # 2. Upload code lên server vào thư mục Release mới
           rsync -avz --delete -e "ssh -p $SERVER_PORT" \
