@@ -112,42 +112,33 @@ jobs:
             ln -sf $SHARED_DIR/.env .env
             ln -sf $SHARED_DIR/data data
             
-            # Cài đặt thư viện mới nhất
-            npm install --production
-            
             # Ghi nhớ lại bản code cũ trước khi tráo đổi
             PREV_RELEASE=\$(readlink -f $APP_DIR/current || echo "")
             
             # TRÁO ĐỔI: Chuyển thư mục current sang trỏ vào code mới
             ln -sfn $RELEASE_DIR $APP_DIR/current
             
-            # Khởi động lại web (delete trước để PM2 đọc lại cwd mới từ ecosystem config)
+            # Khởi động lại hệ thống bằng Docker
             cd $APP_DIR/current
-            echo "Đang khởi động lại PM2..."
-            pm2 delete docshare-api 2>/dev/null || true
-            pm2 start ecosystem.config.js --env production
+            echo "Đang khởi động/cập nhật hệ thống bằng Docker..."
+            docker-compose -p docshare up -d --build app nginx
             
-            # Tự động cập nhật Nginx để nhận file tĩnh (Frontend) và cấu hình mới nhất
-            # Lệnh này chỉ cập nhật lại riêng container Nginx mà không làm gián đoạn Database
-            echo "Đang cập nhật Nginx..."
-            docker-compose -p docshare up -d --force-recreate nginx
-            
-            # Đợi 3 giây để app kịp khởi động
-            sleep 3
+            # Đợi 5 giây để app kịp khởi động
+            sleep 5
             
             # KIỂM TRA LỖI (SMOKE TEST)
-            # Nếu PM2 báo lỗi (errored) hoặc ngừng chạy, kích hoạt cơ chế Rollback
-            if pm2 list | grep docshare-api | grep -q "errored\\|stopped"; then
-              echo "❌ PHÁT HIỆN LỖI APP CRASH! Đang tự động ROLLBACK..."
+            # Kiểm tra xem container có đang chạy ổn định không
+            APP_STATUS=\$(docker inspect -f '{{.State.Status}}' docshare_app 2>/dev/null || echo "not_found")
+            if [ "\$APP_STATUS" != "running" ]; then
+              echo "❌ PHÁT HIỆN LỖI APP CRASH (Trạng thái: \$APP_STATUS)! Đang tự động ROLLBACK..."
               
               if [ -n "\$PREV_RELEASE" ] && [ "\$PREV_RELEASE" != "\$RELEASE_DIR" ]; then
                 # Đổi lại thư mục trỏ về bản cũ
                 ln -sfn \$PREV_RELEASE $APP_DIR/current
                 cd $APP_DIR/current
                 
-                # Khởi động lại bản cũ để cứu sống web
-                pm2 delete docshare-api 2>/dev/null || true
-                pm2 start ecosystem.config.js --env production
+                # Build lại bản cũ để cứu sống web
+                docker-compose -p docshare up -d --build app nginx
                 echo "✅ Rollback thành công về bản: \$PREV_RELEASE"
               else
                 echo "Không tìm thấy bản code cũ để quay lại!"
