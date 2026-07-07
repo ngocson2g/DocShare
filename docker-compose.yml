@@ -47,6 +47,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./public:/usr/share/nginx/html:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/downloads:/var/www/downloads:ro
     depends_on:
       - app
 
